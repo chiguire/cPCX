@@ -232,6 +232,11 @@ namespace cpcx.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Events",
+                columns: new[] { "Id", "End", "Name", "Start", "Venue" },
+                values: new object[] { "00000000-0000-0000-0000-000000000000", new DateTime(2024, 6, 15, 21, 8, 36, 380, DateTimeKind.Utc).AddTicks(1108), "EMF 2026", new DateTime(2024, 6, 8, 21, 8, 36, 380, DateTimeKind.Utc).AddTicks(1104), "Eastnor Castle Deer Park" });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",

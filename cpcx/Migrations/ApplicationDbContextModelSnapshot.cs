@@ -186,6 +186,16 @@ namespace cpcx.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Events");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "00000000-0000-0000-0000-000000000000",
+                            End = new DateTime(2024, 6, 15, 21, 8, 36, 380, DateTimeKind.Utc).AddTicks(1108),
+                            Name = "EMF 2026",
+                            Start = new DateTime(2024, 6, 8, 21, 8, 36, 380, DateTimeKind.Utc).AddTicks(1104),
+                            Venue = "Eastnor Castle Deer Park"
+                        });
                 });
 
             modelBuilder.Entity("cpcx.Entities.Postcard", b =>

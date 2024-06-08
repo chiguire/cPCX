@@ -40,6 +40,16 @@ public class ApplicationDbContext : IdentityDbContext<User>
                 .WithOne(e => e.Event).IsRequired();
             e.HasMany(e => e.Users)
                 .WithMany(u => u.Events);
+            e.HasData(new Event
+            {
+                Id = new Guid().ToString(),
+                Name = "EMF 2026",
+                Venue = "Eastnor Castle Deer Park",
+                Start = DateTime.UtcNow,
+                End = DateTime.UtcNow.AddDays(7),
+                Postcards = [],
+                Users = [],
+            });
         });
 
         builder.Entity<Postcard>(p =>
