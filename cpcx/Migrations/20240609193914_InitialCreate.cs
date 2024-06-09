@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace cpcx.Migrations
 {
     /// <inheritdoc />
@@ -59,6 +61,8 @@ namespace cpcx.Migrations
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Venue = table.Column<string>(type: "TEXT", nullable: false),
+                    Visible = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Open = table.Column<bool>(type: "INTEGER", nullable: false),
                     Start = table.Column<DateTime>(type: "TEXT", nullable: false),
                     End = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
@@ -233,9 +237,19 @@ namespace cpcx.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "Alias", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "Pronouns", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[,]
+                {
+                    { "1", 0, "aaa", "e19c005f-fd57-46d7-8a5b-5d51dcb76a87", "a@example.com", true, false, null, null, null, null, "6543", false, "", "90d786bf-a68d-4f81-baab-bed72d0a0239", false, null },
+                    { "2", 0, "bbb", "8f2c17c6-9cdd-412c-9a79-72aba499dfe9", "b@example.com", true, false, null, null, null, null, "6544", false, "", "9f50e40f-6c31-40dd-aedf-d515a955d7d7", false, null },
+                    { "3", 0, "ccc", "0f8e9906-1b4e-45fe-9831-828a58f22da4", "a@example.com", true, false, null, null, null, null, "6545", false, "", "06c6270d-ff7b-4bdd-9788-1bb38d35b9fc", false, null }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Events",
-                columns: new[] { "Id", "End", "Name", "Start", "Venue" },
-                values: new object[] { "00000000-0000-0000-0000-000000000000", new DateTime(2024, 6, 15, 21, 8, 36, 380, DateTimeKind.Utc).AddTicks(1108), "EMF 2026", new DateTime(2024, 6, 8, 21, 8, 36, 380, DateTimeKind.Utc).AddTicks(1104), "Eastnor Castle Deer Park" });
+                columns: new[] { "Id", "End", "Name", "Open", "Start", "Venue", "Visible" },
+                values: new object[] { "00000000-0000-0000-0000-000000000000", new DateTime(2024, 6, 16, 19, 39, 13, 246, DateTimeKind.Utc).AddTicks(485), "EMF 2026", false, new DateTime(2024, 6, 9, 19, 39, 13, 246, DateTimeKind.Utc).AddTicks(483), "Eastnor Castle Deer Park", true });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

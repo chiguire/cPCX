@@ -31,6 +31,33 @@ public class ApplicationDbContext : IdentityDbContext<User>
                 .WithOne(p => p.Sender);
             u.HasMany(u => u.PostcardsReceived)
                 .WithOne(p => p.Receiver);
+
+            u.HasData([
+                new User
+                {
+                    Id = "1",
+                    Email = "a@example.com",
+                    Alias = "aaa",
+                    PhoneNumber = "6543",
+                    EmailConfirmed = true,
+                },
+                new User
+                {
+                    Id = "2",
+                    Email = "b@example.com",
+                    Alias = "bbb",
+                    PhoneNumber = "6544",
+                    EmailConfirmed = true,
+                },
+                new User
+                {
+                    Id = "3",
+                    Email = "a@example.com",
+                    Alias = "ccc",
+                    PhoneNumber = "6545",
+                    EmailConfirmed = true,
+                },
+            ]);
         });
 
         builder.Entity<Event>(e =>

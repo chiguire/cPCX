@@ -11,7 +11,7 @@ using cpcx.Data;
 namespace cpcx.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240608210837_InitialCreate")]
+    [Migration("20240609193914_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -179,12 +179,18 @@ namespace cpcx.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("Open")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("Start")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Venue")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("Visible")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -194,10 +200,12 @@ namespace cpcx.Migrations
                         new
                         {
                             Id = "00000000-0000-0000-0000-000000000000",
-                            End = new DateTime(2024, 6, 15, 21, 8, 36, 380, DateTimeKind.Utc).AddTicks(1108),
+                            End = new DateTime(2024, 6, 16, 19, 39, 13, 246, DateTimeKind.Utc).AddTicks(485),
                             Name = "EMF 2026",
-                            Start = new DateTime(2024, 6, 8, 21, 8, 36, 380, DateTimeKind.Utc).AddTicks(1104),
-                            Venue = "Eastnor Castle Deer Park"
+                            Open = false,
+                            Start = new DateTime(2024, 6, 9, 19, 39, 13, 246, DateTimeKind.Utc).AddTicks(483),
+                            Venue = "Eastnor Castle Deer Park",
+                            Visible = true
                         });
                 });
 
@@ -313,6 +321,53 @@ namespace cpcx.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1",
+                            AccessFailedCount = 0,
+                            Alias = "aaa",
+                            ConcurrencyStamp = "e19c005f-fd57-46d7-8a5b-5d51dcb76a87",
+                            Email = "a@example.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            PhoneNumber = "6543",
+                            PhoneNumberConfirmed = false,
+                            Pronouns = "",
+                            SecurityStamp = "90d786bf-a68d-4f81-baab-bed72d0a0239",
+                            TwoFactorEnabled = false
+                        },
+                        new
+                        {
+                            Id = "2",
+                            AccessFailedCount = 0,
+                            Alias = "bbb",
+                            ConcurrencyStamp = "8f2c17c6-9cdd-412c-9a79-72aba499dfe9",
+                            Email = "b@example.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            PhoneNumber = "6544",
+                            PhoneNumberConfirmed = false,
+                            Pronouns = "",
+                            SecurityStamp = "9f50e40f-6c31-40dd-aedf-d515a955d7d7",
+                            TwoFactorEnabled = false
+                        },
+                        new
+                        {
+                            Id = "3",
+                            AccessFailedCount = 0,
+                            Alias = "ccc",
+                            ConcurrencyStamp = "0f8e9906-1b4e-45fe-9831-828a58f22da4",
+                            Email = "a@example.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            PhoneNumber = "6545",
+                            PhoneNumberConfirmed = false,
+                            Pronouns = "",
+                            SecurityStamp = "06c6270d-ff7b-4bdd-9788-1bb38d35b9fc",
+                            TwoFactorEnabled = false
+                        });
                 });
 
             modelBuilder.Entity("EventUser", b =>
