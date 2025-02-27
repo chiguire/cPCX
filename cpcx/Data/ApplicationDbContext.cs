@@ -58,10 +58,10 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
             new CpcxUser
             {
                 Id = Guid.NewGuid().ToString(),
-                UserName = "bbb",
-                NormalizedUserName = "BBB",
-                Email = "b@example.com",
-                NormalizedEmail = "B@EXAMPLE.COM",
+                UserName = "ccc",
+                NormalizedUserName = "CCC",
+                Email = "c@example.com",
+                NormalizedEmail = "C@EXAMPLE.COM",
                 PasswordHash = devpassword,
                 Alias = "ccc",
                 Pronouns = Pronoun.Neutral,
