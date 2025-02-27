@@ -1,8 +1,7 @@
 ﻿using cpcx.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
-using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Identity;
 
 namespace cpcx.Data;
 
@@ -16,11 +15,14 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        
+        var hasher = new PasswordHasher<CpcxUser>();
+        var devpassword = hasher.HashPassword(null!, "devpassword");
+        
 
-        var eventGuid = Guid.NewGuid();
         var initialEvent = new Event
         {
-            Id = eventGuid.ToString(),
+            Id = Guid.NewGuid().ToString(),
             Name = "EMF 2026",
             PublicId = "E26",
             Venue = "Eastnor Castle Deer Park",
@@ -33,27 +35,36 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
         {
             new CpcxUser
             {
-                Id = "1",
+                Id = Guid.NewGuid().ToString(),
+                UserName = "aaa",
+                NormalizedUserName = "AAA",
                 Email = "a@example.com",
+                NormalizedEmail = "A@EXAMPLE.COM",
+                PasswordHash = devpassword,
                 Alias = "aaa",
-                PhoneNumber = "6543",
-                EmailConfirmed = true,
+                Pronouns = Pronoun.Male,
             },
             new CpcxUser
             {
-                Id = "2",
+                Id = Guid.NewGuid().ToString(),
+                UserName = "bbb",
+                NormalizedUserName = "BBB",
                 Email = "b@example.com",
+                NormalizedEmail = "B@EXAMPLE.COM",
+                PasswordHash = devpassword,
                 Alias = "bbb",
-                PhoneNumber = "6544",
-                EmailConfirmed = true,
+                Pronouns = Pronoun.Female,
             },
             new CpcxUser
             {
-                Id = "3",
-                Email = "a@example.com",
+                Id = Guid.NewGuid().ToString(),
+                UserName = "bbb",
+                NormalizedUserName = "BBB",
+                Email = "b@example.com",
+                NormalizedEmail = "B@EXAMPLE.COM",
+                PasswordHash = devpassword,
                 Alias = "ccc",
-                PhoneNumber = "6545",
-                EmailConfirmed = true,
+                Pronouns = Pronoun.Neutral,
             },
         };
         var initialEventUserList = new List<EventUser>
