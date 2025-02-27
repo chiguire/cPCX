@@ -24,17 +24,17 @@ namespace cpcx.Areas.Identity.Pages.Account
 {
     public class RegisterModel : PageModel
     {
-        private readonly SignInManager<User> _signInManager;
-        private readonly UserManager<User> _userManager;
-        private readonly IUserStore<User> _userStore;
-        private readonly IUserEmailStore<User> _emailStore;
+        private readonly SignInManager<CpcxUser> _signInManager;
+        private readonly UserManager<CpcxUser> _userManager;
+        private readonly IUserStore<CpcxUser> _userStore;
+        private readonly IUserEmailStore<CpcxUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
-            UserManager<User> userManager,
-            IUserStore<User> userStore,
-            SignInManager<User> signInManager,
+            UserManager<CpcxUser> userManager,
+            IUserStore<CpcxUser> userStore,
+            SignInManager<CpcxUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender)
         {
@@ -160,11 +160,11 @@ namespace cpcx.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private User CreateUser()
+        private CpcxUser CreateUser()
         {
             try
             {
-                return Activator.CreateInstance<User>();
+                return Activator.CreateInstance<CpcxUser>();
             }
             catch
             {
@@ -174,13 +174,13 @@ namespace cpcx.Areas.Identity.Pages.Account
             }
         }
 
-        private IUserEmailStore<User> GetEmailStore()
+        private IUserEmailStore<CpcxUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
-            return (IUserEmailStore<User>)_userStore;
+            return (IUserEmailStore<CpcxUser>)_userStore;
         }
     }
 }

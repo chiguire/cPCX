@@ -2,8 +2,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using cpcx.Data;
 using cpcx.Entities;
+using cpcx.Config;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<PostcardConfig>(
+     builder.Configuration.GetSection(PostcardConfig.Postcard));
+
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -12,7 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services
-    .AddDefaultIdentity<User>(options => {
+    .AddDefaultIdentity<CpcxUser>(options => {
         options.SignIn.RequireConfirmedAccount = false;
         options.SignIn.RequireConfirmedPhoneNumber = false;
         options.SignIn.RequireConfirmedEmail = false;

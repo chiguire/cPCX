@@ -34,6 +34,9 @@ namespace cpcx.Migrations
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     Alias = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     Pronouns = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    DeactivatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    BlockedUntilDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CpcxUserId = table.Column<string>(type: "TEXT", nullable: true),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
@@ -52,15 +55,22 @@ namespace cpcx.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUsers_AspNetUsers_CpcxUserId",
+                        column: x => x.CpcxUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Events",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Venue = table.Column<string>(type: "TEXT", nullable: false),
+                    Id = table.Column<string>(type: "TEXT", maxLength: 36, nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 60, nullable: false),
+                    PublicId = table.Column<string>(type: "TEXT", maxLength: 3, nullable: false),
+                    LastPostcardId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Venue = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
                     Visible = table.Column<bool>(type: "INTEGER", nullable: false),
                     Open = table.Column<bool>(type: "INTEGER", nullable: false),
                     Start = table.Column<DateTime>(type: "TEXT", nullable: false),
@@ -178,24 +188,28 @@ namespace cpcx.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EventUser",
+                name: "EventUsers",
                 columns: table => new
                 {
-                    EventsId = table.Column<string>(type: "TEXT", nullable: false),
-                    UsersId = table.Column<string>(type: "TEXT", nullable: false)
+                    EventId = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    Address = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
+                    ActiveInEvent = table.Column<bool>(type: "INTEGER", nullable: false),
+                    PostcardsSent = table.Column<int>(type: "INTEGER", nullable: false),
+                    PostcardsReceived = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EventUser", x => new { x.EventsId, x.UsersId });
+                    table.PrimaryKey("PK_EventUsers", x => new { x.EventId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_EventUser_AspNetUsers_UsersId",
-                        column: x => x.UsersId,
+                        name: "FK_EventUsers_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_EventUser_Events_EventsId",
-                        column: x => x.EventsId,
+                        name: "FK_EventUsers_Events_EventId",
+                        column: x => x.EventId,
                         principalTable: "Events",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -207,11 +221,11 @@ namespace cpcx.Migrations
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     EventId = table.Column<string>(type: "TEXT", nullable: false),
-                    PublicId = table.Column<string>(type: "TEXT", nullable: false),
                     SentOn = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "datetime()"),
                     ReceivedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    SenderId = table.Column<string>(type: "TEXT", nullable: false),
-                    ReceiverId = table.Column<string>(type: "TEXT", nullable: false)
+                    SenderId = table.Column<string>(type: "TEXT", nullable: true),
+                    ReceiverId = table.Column<string>(type: "TEXT", nullable: true),
+                    PostcardId = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -220,14 +234,12 @@ namespace cpcx.Migrations
                         name: "FK_Postcards_AspNetUsers_ReceiverId",
                         column: x => x.ReceiverId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Postcards_AspNetUsers_SenderId",
                         column: x => x.SenderId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Postcards_Events_EventId",
                         column: x => x.EventId,
@@ -238,18 +250,28 @@ namespace cpcx.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "Alias", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "Pronouns", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                columns: new[] { "Id", "AccessFailedCount", "Alias", "BlockedUntilDate", "ConcurrencyStamp", "CpcxUserId", "DeactivatedDate", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "Pronouns", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { "1", 0, "aaa", "e19c005f-fd57-46d7-8a5b-5d51dcb76a87", "a@example.com", true, false, null, null, null, null, "6543", false, "", "90d786bf-a68d-4f81-baab-bed72d0a0239", false, null },
-                    { "2", 0, "bbb", "8f2c17c6-9cdd-412c-9a79-72aba499dfe9", "b@example.com", true, false, null, null, null, null, "6544", false, "", "9f50e40f-6c31-40dd-aedf-d515a955d7d7", false, null },
-                    { "3", 0, "ccc", "0f8e9906-1b4e-45fe-9831-828a58f22da4", "a@example.com", true, false, null, null, null, null, "6545", false, "", "06c6270d-ff7b-4bdd-9788-1bb38d35b9fc", false, null }
+                    { "1", 0, "aaa", new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "befbd792-dfb4-4d1d-a5b8-99aa83b8f457", null, new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "a@example.com", true, false, null, null, null, null, "6543", false, "", "7d76b21d-95f6-487c-bbf6-a6d62aa40a74", false, null },
+                    { "2", 0, "bbb", new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "ef257219-3f1d-44b5-8c24-4e1b02f061ea", null, new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "b@example.com", true, false, null, null, null, null, "6544", false, "", "e52f03da-139b-4b70-99a5-1c30260cc60c", false, null },
+                    { "3", 0, "ccc", new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "f4292fdd-fb46-4db7-8e94-e2c195154f7c", null, new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "a@example.com", true, false, null, null, null, null, "6545", false, "", "94ddefe7-8476-4a44-a293-b4ff5ccb8d07", false, null }
                 });
 
             migrationBuilder.InsertData(
                 table: "Events",
-                columns: new[] { "Id", "End", "Name", "Open", "Start", "Venue", "Visible" },
-                values: new object[] { "00000000-0000-0000-0000-000000000000", new DateTime(2024, 6, 16, 19, 39, 13, 246, DateTimeKind.Utc).AddTicks(485), "EMF 2026", false, new DateTime(2024, 6, 9, 19, 39, 13, 246, DateTimeKind.Utc).AddTicks(483), "Eastnor Castle Deer Park", true });
+                columns: new[] { "Id", "End", "LastPostcardId", "Name", "Open", "PublicId", "Start", "Venue", "Visible" },
+                values: new object[] { "a06a4a8b-771f-4d67-b54e-3dbb7aef2373", new DateTime(2025, 3, 6, 12, 0, 4, 213, DateTimeKind.Utc).AddTicks(1465), 1, "EMF 2026", true, "E26", new DateTime(2025, 2, 27, 12, 0, 4, 213, DateTimeKind.Utc).AddTicks(1462), "Eastnor Castle Deer Park", true });
+
+            migrationBuilder.InsertData(
+                table: "EventUsers",
+                columns: new[] { "EventId", "UserId", "ActiveInEvent", "Address", "PostcardsReceived", "PostcardsSent" },
+                values: new object[,]
+                {
+                    { "a06a4a8b-771f-4d67-b54e-3dbb7aef2373", "1", true, "Tent 1, Zone A", 0, 0 },
+                    { "a06a4a8b-771f-4d67-b54e-3dbb7aef2373", "2", true, "Tent 1, Zone B", 0, 0 },
+                    { "a06a4a8b-771f-4d67-b54e-3dbb7aef2373", "3", true, "Tent 2, Zone B", 0, 0 }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -283,15 +305,20 @@ namespace cpcx.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_CpcxUserId",
+                table: "AspNetUsers",
+                column: "CpcxUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_EventUser_UsersId",
-                table: "EventUser",
-                column: "UsersId");
+                name: "IX_EventUsers_UserId",
+                table: "EventUsers",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Postcards_EventId",
@@ -328,7 +355,7 @@ namespace cpcx.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "EventUser");
+                name: "EventUsers");
 
             migrationBuilder.DropTable(
                 name: "Postcards");

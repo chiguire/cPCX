@@ -11,29 +11,14 @@ using cpcx.Data;
 namespace cpcx.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240609193914_InitialCreate")]
+    [Migration("20250227120005_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.6");
-
-            modelBuilder.Entity("EventUser", b =>
-                {
-                    b.Property<string>("EventsId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UsersId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("EventsId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("EventUser");
-                });
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -167,89 +152,7 @@ namespace cpcx.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("cpcx.Entities.Event", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("End")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Open")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("Start")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Venue")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Visible")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Events");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "00000000-0000-0000-0000-000000000000",
-                            End = new DateTime(2024, 6, 16, 19, 39, 13, 246, DateTimeKind.Utc).AddTicks(485),
-                            Name = "EMF 2026",
-                            Open = false,
-                            Start = new DateTime(2024, 6, 9, 19, 39, 13, 246, DateTimeKind.Utc).AddTicks(483),
-                            Venue = "Eastnor Castle Deer Park",
-                            Visible = true
-                        });
-                });
-
-            modelBuilder.Entity("cpcx.Entities.Postcard", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EventId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PublicId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ReceivedOn")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReceiverId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SenderId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("SentOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValueSql("datetime()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Postcards");
-                });
-
-            modelBuilder.Entity("cpcx.Entities.User", b =>
+            modelBuilder.Entity("cpcx.Entities.CpcxUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -262,8 +165,17 @@ namespace cpcx.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("BlockedUntilDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CpcxUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DeactivatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
@@ -313,6 +225,8 @@ namespace cpcx.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CpcxUserId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -328,14 +242,16 @@ namespace cpcx.Migrations
                             Id = "1",
                             AccessFailedCount = 0,
                             Alias = "aaa",
-                            ConcurrencyStamp = "e19c005f-fd57-46d7-8a5b-5d51dcb76a87",
+                            BlockedUntilDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ConcurrencyStamp = "befbd792-dfb4-4d1d-a5b8-99aa83b8f457",
+                            DeactivatedDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "a@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             PhoneNumber = "6543",
                             PhoneNumberConfirmed = false,
                             Pronouns = "",
-                            SecurityStamp = "90d786bf-a68d-4f81-baab-bed72d0a0239",
+                            SecurityStamp = "7d76b21d-95f6-487c-bbf6-a6d62aa40a74",
                             TwoFactorEnabled = false
                         },
                         new
@@ -343,14 +259,16 @@ namespace cpcx.Migrations
                             Id = "2",
                             AccessFailedCount = 0,
                             Alias = "bbb",
-                            ConcurrencyStamp = "8f2c17c6-9cdd-412c-9a79-72aba499dfe9",
+                            BlockedUntilDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ConcurrencyStamp = "ef257219-3f1d-44b5-8c24-4e1b02f061ea",
+                            DeactivatedDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "b@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             PhoneNumber = "6544",
                             PhoneNumberConfirmed = false,
                             Pronouns = "",
-                            SecurityStamp = "9f50e40f-6c31-40dd-aedf-d515a955d7d7",
+                            SecurityStamp = "e52f03da-139b-4b70-99a5-1c30260cc60c",
                             TwoFactorEnabled = false
                         },
                         new
@@ -358,31 +276,170 @@ namespace cpcx.Migrations
                             Id = "3",
                             AccessFailedCount = 0,
                             Alias = "ccc",
-                            ConcurrencyStamp = "0f8e9906-1b4e-45fe-9831-828a58f22da4",
+                            BlockedUntilDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ConcurrencyStamp = "f4292fdd-fb46-4db7-8e94-e2c195154f7c",
+                            DeactivatedDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "a@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             PhoneNumber = "6545",
                             PhoneNumberConfirmed = false,
                             Pronouns = "",
-                            SecurityStamp = "06c6270d-ff7b-4bdd-9788-1bb38d35b9fc",
+                            SecurityStamp = "94ddefe7-8476-4a44-a293-b4ff5ccb8d07",
                             TwoFactorEnabled = false
                         });
                 });
 
-            modelBuilder.Entity("EventUser", b =>
+            modelBuilder.Entity("cpcx.Entities.Event", b =>
                 {
-                    b.HasOne("cpcx.Entities.Event", null)
-                        .WithMany()
-                        .HasForeignKey("EventsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("TEXT");
 
-                    b.HasOne("cpcx.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<DateTime>("End")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LastPostcardId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Open")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PublicId")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Start")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Venue")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Visible")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Events");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "a06a4a8b-771f-4d67-b54e-3dbb7aef2373",
+                            End = new DateTime(2025, 3, 6, 12, 0, 4, 213, DateTimeKind.Utc).AddTicks(1465),
+                            LastPostcardId = 1,
+                            Name = "EMF 2026",
+                            Open = true,
+                            PublicId = "E26",
+                            Start = new DateTime(2025, 2, 27, 12, 0, 4, 213, DateTimeKind.Utc).AddTicks(1462),
+                            Venue = "Eastnor Castle Deer Park",
+                            Visible = true
+                        });
+                });
+
+            modelBuilder.Entity("cpcx.Entities.EventUser", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ActiveInEvent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PostcardsReceived")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PostcardsSent")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("EventId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EventUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            EventId = "a06a4a8b-771f-4d67-b54e-3dbb7aef2373",
+                            UserId = "1",
+                            ActiveInEvent = true,
+                            Address = "Tent 1, Zone A",
+                            PostcardsReceived = 0,
+                            PostcardsSent = 0
+                        },
+                        new
+                        {
+                            EventId = "a06a4a8b-771f-4d67-b54e-3dbb7aef2373",
+                            UserId = "2",
+                            ActiveInEvent = true,
+                            Address = "Tent 1, Zone B",
+                            PostcardsReceived = 0,
+                            PostcardsSent = 0
+                        },
+                        new
+                        {
+                            EventId = "a06a4a8b-771f-4d67-b54e-3dbb7aef2373",
+                            UserId = "3",
+                            ActiveInEvent = true,
+                            Address = "Tent 2, Zone B",
+                            PostcardsReceived = 0,
+                            PostcardsSent = 0
+                        });
+                });
+
+            modelBuilder.Entity("cpcx.Entities.Postcard", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EventId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PostcardId")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ReceivedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReceiverId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SenderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SentOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Postcards");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -396,7 +453,7 @@ namespace cpcx.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("cpcx.Entities.User", null)
+                    b.HasOne("cpcx.Entities.CpcxUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -405,7 +462,7 @@ namespace cpcx.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("cpcx.Entities.User", null)
+                    b.HasOne("cpcx.Entities.CpcxUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -420,7 +477,7 @@ namespace cpcx.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("cpcx.Entities.User", null)
+                    b.HasOne("cpcx.Entities.CpcxUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -429,32 +486,54 @@ namespace cpcx.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("cpcx.Entities.User", null)
+                    b.HasOne("cpcx.Entities.CpcxUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("cpcx.Entities.Postcard", b =>
+            modelBuilder.Entity("cpcx.Entities.CpcxUser", b =>
+                {
+                    b.HasOne("cpcx.Entities.CpcxUser", null)
+                        .WithMany("BlockedUsers")
+                        .HasForeignKey("CpcxUserId");
+                });
+
+            modelBuilder.Entity("cpcx.Entities.EventUser", b =>
                 {
                     b.HasOne("cpcx.Entities.Event", "Event")
-                        .WithMany("Postcards")
+                        .WithMany()
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("cpcx.Entities.User", "Receiver")
-                        .WithMany("PostcardsReceived")
-                        .HasForeignKey("ReceiverId")
+                    b.HasOne("cpcx.Entities.CpcxUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("cpcx.Entities.User", "Sender")
-                        .WithMany("PostcardsSent")
-                        .HasForeignKey("SenderId")
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("cpcx.Entities.Postcard", b =>
+                {
+                    b.HasOne("cpcx.Entities.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("cpcx.Entities.CpcxUser", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("ReceiverId");
+
+                    b.HasOne("cpcx.Entities.CpcxUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId");
 
                     b.Navigation("Event");
 
@@ -463,16 +542,9 @@ namespace cpcx.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("cpcx.Entities.Event", b =>
+            modelBuilder.Entity("cpcx.Entities.CpcxUser", b =>
                 {
-                    b.Navigation("Postcards");
-                });
-
-            modelBuilder.Entity("cpcx.Entities.User", b =>
-                {
-                    b.Navigation("PostcardsReceived");
-
-                    b.Navigation("PostcardsSent");
+                    b.Navigation("BlockedUsers");
                 });
 #pragma warning restore 612, 618
         }

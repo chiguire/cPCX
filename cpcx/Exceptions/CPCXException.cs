@@ -16,6 +16,14 @@
     {
         None = 0,
         Unknown,
+        EventNotFound,
         EventNameAlreadyUsed,
+        EventStartAfterEnd,
+        EventUserAlreadyJoined,
+        EventUserNotJoined,
+        EventUserAddressEmpty,
+        PostcardNotFound,
+        TravelingPostcardLimitReached,
+        NoAddressesFoundInEvent,
     }
 }
