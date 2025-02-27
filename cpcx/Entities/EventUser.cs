@@ -5,17 +5,12 @@ namespace cpcx.Entities
 {
     public class EventUser
     {
-        [ForeignKey("Event")]
-        public string EventId { get; set; }
+        [ForeignKey("Event")] [MaxLength(36)] public string EventId { get; init; } = null!;
         public Event Event { get; init; } = null!;
-        [ForeignKey("User")]
-        public string UserId { get; set; }
+        [ForeignKey("User")] [MaxLength(36)] public string UserId { get; init; } = null!;
         public CpcxUser User { get; init; } = null!;
-
-        [MaxLength(150)]
-        public string Address { get; set; } = "";
+        [MaxLength(150)] public string Address { get; set; } = null!;
         public bool ActiveInEvent { get; set; } = true;
-        
         public int PostcardsSent { get; set; } = 0;
         public int PostcardsReceived { get; set; } = 0;
     }

@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 
 # sqlite database
 *.db
+
+# Database migrations are specific to an instance
+cpcx/Migrations/

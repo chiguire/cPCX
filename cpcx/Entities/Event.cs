@@ -4,17 +4,12 @@ using Microsoft.AspNetCore.Identity;
 namespace cpcx.Entities
 {
     public class Event
-    {  
-        [MaxLength(36)]
-        public string Id { get; set; }
-        [MaxLength(60)]
-        public string Name { get; set; } = "";
-        [MaxLength(3)]
-        public string PublicId { get; set; } = "";
-
+    {
+        [MaxLength(36)] public string Id { get; set; } = null!;
+        [MaxLength(60)] public string Name { get; set; } = null!;
+        [MaxLength(3)] public string PublicId { get; set; } = null!;
         public int LastPostcardId { get; set; } = 1;
-        [MaxLength(150)]
-        public string Venue { get; set; } = "";
+        [MaxLength(150)] public string Venue { get; set; } = null!;
         public bool Visible { get; set; } = true;
         public bool Open { get; set; } = false;
         public DateTime Start { get; set; }
