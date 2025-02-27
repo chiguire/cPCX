@@ -36,8 +36,8 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
             new CpcxUser
             {
                 Id = Guid.NewGuid().ToString(),
-                UserName = "aaa",
-                NormalizedUserName = "AAA",
+                UserName = "a@example.com",
+                NormalizedUserName = "A@EXAMPLE.COM",
                 Email = "a@example.com",
                 NormalizedEmail = "A@EXAMPLE.COM",
                 PasswordHash = devpassword,
@@ -47,8 +47,8 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
             new CpcxUser
             {
                 Id = Guid.NewGuid().ToString(),
-                UserName = "bbb",
-                NormalizedUserName = "BBB",
+                UserName = "b@example.com",
+                NormalizedUserName = "B@EXAMPLE.COM",
                 Email = "b@example.com",
                 NormalizedEmail = "B@EXAMPLE.COM",
                 PasswordHash = devpassword,
@@ -58,8 +58,8 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
             new CpcxUser
             {
                 Id = Guid.NewGuid().ToString(),
-                UserName = "ccc",
-                NormalizedUserName = "CCC",
+                UserName = "c@example.com",
+                NormalizedUserName = "C@EXAMPLE.COM",
                 Email = "c@example.com",
                 NormalizedEmail = "C@EXAMPLE.COM",
                 PasswordHash = devpassword,
@@ -99,6 +99,7 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
         
         builder.Entity<Event>(e =>
         {
+            e.HasIndex(e => e.PublicId).IsUnique();
             e.HasData(initialEvent);
         });
 

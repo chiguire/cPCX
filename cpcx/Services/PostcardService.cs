@@ -76,25 +76,29 @@ namespace cpcx.Services
             return address;
         }
 
-        private bool UserCanSendPostcard(EventUser eu)
+        public async Task<Postcard?> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId)
         {
-            if (eu.ActiveInEvent == false)
-            {
-                return false;
-            }
-
-            // TODO - Allow custom number of travelling postcards per event
-            var travellingPostcardsNum = context.Postcards.Count(
-                p =>
-                    // Postcards from THIS event
-                    p.Event.Id == eu.EventId &&
-                    // Postcards from THIS user
-                    p.Sender.Id == eu.UserId &&
-                    // Postcard hasn't been registered yet
-                    p.ReceivedOn == null
+            var postcardToRegister = context.Postcards.FirstOrDefault(p =>
+                // Postcard from this event
+                p.Event.PublicId == publicEventId &&
+                // Postcard meant for this user
+                p.Receiver.Id == u.Id &&
+                // Postcard has the correct postcard ID
+                p.PostcardId == postcardId
             );
 
-            return travellingPostcardsNum < _postcardConfig.MaxTravellingPostcards;
+            if (postcardToRegister == null)
+            {
+                logger.LogError("Postcard {publicEventId}-{postcardId} not found, or not meant for user {userId}", publicEventId, postcardId, u.Id);
+                throw new CPCXException(CPCXErrorCode.EventNotFound);
+            }
+            
+            postcardToRegister.ReceivedOn = DateTime.UtcNow;
+
+            context.Postcards.Update(postcardToRegister);
+            await context.SaveChangesAsync();
+
+            return postcardToRegister;
         }
     }
 }

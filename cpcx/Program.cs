@@ -6,6 +6,8 @@ using cpcx.Config;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<CpcxConfig>(
+    builder.Configuration.GetSection(CpcxConfig.Cpcx));
 builder.Services.Configure<PostcardConfig>(
      builder.Configuration.GetSection(PostcardConfig.Postcard));
 

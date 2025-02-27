@@ -26,12 +26,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.4" />
+    <PackageReference Include="TagHelperSamples.Authorization" Version="3.0.56" />
+    <PackageReference Include="TagHelperSamples.Bootstrap" Version="2.0.49" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Migrations\" />
     <Folder Include="Pages\Admin\Events\" />
-    <Folder Include="Pages\Postcard\" />
   </ItemGroup>
 
 </Project>
