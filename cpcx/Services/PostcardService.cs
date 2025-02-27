@@ -3,18 +3,23 @@ using cpcx.Config;
 using cpcx.Data;
 using cpcx.Entities;
 using cpcx.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace cpcx.Services
 {
+    public interface IPostcardService
+    {
+        Task<Postcard> SendPostcard(CpcxUser u, Event e);
+        Task<Postcard?> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId);
+    }
+
     public class PostcardService(
         ApplicationDbContext context,
-        IMapper mapper,
         IEventService eventService,
         IOptionsSnapshot<PostcardConfig> postcardConfig,
-        ILogger<PostcardService> logger)
+        ILogger<PostcardService> logger) : IPostcardService
     {
-        private readonly IMapper _mapper = mapper;
         private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
 
         public async Task<Postcard> SendPostcard(CpcxUser u, Event e)
@@ -29,7 +34,7 @@ namespace cpcx.Services
 
             var np = new Postcard
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid(),
                 Event = e,
                 Sender = u,
                 Receiver = chosenAddress.User,
@@ -43,7 +48,7 @@ namespace cpcx.Services
             return np;
         }
 
-        private async Task<EventUser?> GetAvailableAddress(CpcxUser u, string eventId)
+        private async Task<EventUser?> GetAvailableAddress(CpcxUser u, Guid eventId)
         {
             var e = await eventService.GetEvent(eventId);
             if (e == null)
@@ -59,7 +64,7 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
             }
 
-            var address = context.EventUsers.FirstOrDefault(
+            var address = await context.EventUsers.FirstOrDefaultAsync(
                 eu_ =>
                     // Postcards from THIS event
                     eu_.EventId == eventId &&
@@ -70,7 +75,7 @@ namespace cpcx.Services
                     // Recipient has this user blocked
                     u.BlockedUsers.Find(bu => bu.Id == eu_.UserId) == null &&
                     // Recipient can still receive postcards if they have sent a couple more postcards than they have received
-                    eu_.PostcardsSent - eu_.PostcardsReceived < postcardConfig.Value.MaxDifferenceBetweenSentAndReceived
+                    eu_.PostcardsSent - eu_.PostcardsReceived < _postcardConfig.MaxDifferenceBetweenSentAndReceived
                     );
             
             return address;
@@ -78,7 +83,7 @@ namespace cpcx.Services
 
         public async Task<Postcard?> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId)
         {
-            var postcardToRegister = context.Postcards.FirstOrDefault(p =>
+            var postcardToRegister = await context.Postcards.FirstOrDefaultAsync(p =>
                 // Postcard from this event
                 p.Event.PublicId == publicEventId &&
                 // Postcard meant for this user

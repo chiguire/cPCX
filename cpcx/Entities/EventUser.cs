@@ -5,9 +5,9 @@ namespace cpcx.Entities
 {
     public class EventUser
     {
-        [ForeignKey("Event")] [MaxLength(36)] public string EventId { get; init; } = null!;
+        [ForeignKey("Event")] public Guid EventId { get; init; }
         public Event Event { get; init; } = null!;
-        [ForeignKey("User")] [MaxLength(36)] public string UserId { get; init; } = null!;
+        [ForeignKey("User")] public Guid UserId { get; init; }
         public CpcxUser User { get; init; } = null!;
         [MaxLength(150)] public string Address { get; set; } = null!;
         public bool ActiveInEvent { get; set; } = true;

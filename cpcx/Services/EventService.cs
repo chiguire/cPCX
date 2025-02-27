@@ -8,16 +8,16 @@ namespace cpcx.Services
 {
     public interface IEventService
     {
-        Task AddUser(string id, CpcxUser u, string address);
+        Task AddUser(Guid id, CpcxUser u, string address);
         Task CreateEvent(EventInput eventInput);
-        Task<Event?> GetEvent(string id);
-        Task RemoveUser(string id, CpcxUser u);
-        Task SetEventDates(string id, DateTime start, DateTime end);
-        Task SetEventName(string id, string value);
-        Task SetEventOpen(string id, bool value);
-        Task SetEventVenue(string id, string value);
-        Task SetEventVisible(string id, bool value);
-        Task<string> GetNextEventPostcardId(string id);
+        Task<Event?> GetEvent(Guid id);
+        Task RemoveUser(Guid id, CpcxUser u);
+        Task SetEventDates(Guid id, DateTime start, DateTime end);
+        Task SetEventName(Guid id, string value);
+        Task SetEventOpen(Guid id, bool value);
+        Task SetEventVenue(Guid id, string value);
+        Task SetEventVisible(Guid id, bool value);
+        Task<string> GetNextEventPostcardId(Guid id);
     }
 
     public class EventService(ApplicationDbContext context, IMapper mapper, ILogger<EventService> logger)
@@ -32,19 +32,19 @@ namespace cpcx.Services
             }
 
             Event e = mapper.Map<Event>(eventInput);
-            e.Id = Guid.NewGuid().ToString();
+            e.Id = Guid.NewGuid();
 
             context.Events.Add(e);
 
             await context.SaveChangesAsync();
         }
 
-        public async Task<Event?> GetEvent(string id)
+        public async Task<Event?> GetEvent(Guid id)
         {
             return await context.FindAsync<Event>(id);
         }
 
-        public async Task SetEventVisible(string id, bool value)
+        public async Task SetEventVisible(Guid id, bool value)
         {
             var e = await GetEvent(id);
             if (e == null)
@@ -58,7 +58,7 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task SetEventOpen(string id, bool value)
+        public async Task SetEventOpen(Guid id, bool value)
         {
             var e = await GetEvent(id);
             if (e == null)
@@ -72,7 +72,7 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task SetEventName(string id, string value)
+        public async Task SetEventName(Guid id, string value)
         {
             var e = await GetEvent(id);
             if (e == null)
@@ -91,7 +91,7 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task SetEventVenue(string id, string value)
+        public async Task SetEventVenue(Guid id, string value)
         {
             var e = await GetEvent(id);
             if (e == null)
@@ -105,7 +105,7 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task SetEventDates(string id, DateTime start, DateTime end)
+        public async Task SetEventDates(Guid id, DateTime start, DateTime end)
         {
             var e = await GetEvent(id);
             if (e == null)
@@ -126,7 +126,7 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task AddUser(string id, CpcxUser u, string address)
+        public async Task AddUser(Guid id, CpcxUser u, string address)
         {
             var eu = await context.FindAsync<EventUser>(id, u.Id);
             
@@ -155,7 +155,7 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateUserAddress(string id, CpcxUser u, string address)
+        public async Task UpdateUserAddress(Guid id, CpcxUser u, string address)
         {
             var e = await GetEvent(id);
             if (e == null)
@@ -179,7 +179,7 @@ namespace cpcx.Services
 
 
 
-        public async Task RemoveUser(string id, CpcxUser u)
+        public async Task RemoveUser(Guid id, CpcxUser u)
         {
             var e = await GetEvent(id);
             if (e == null)
@@ -199,7 +199,7 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<string> GetNextEventPostcardId(string id)
+        public async Task<string> GetNextEventPostcardId(Guid id)
         {
             var e = await GetEvent(id);
             if (e == null)

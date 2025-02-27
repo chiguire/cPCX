@@ -5,13 +5,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace cpcx.Data;
 
-public class ApplicationDbContext : IdentityDbContext<CpcxUser>
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    : IdentityDbContext<CpcxUser, IdentityRole<Guid>, Guid>(options)
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -22,7 +18,7 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
 
         var initialEvent = new Event
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = Guid.NewGuid(),
             Name = "EMF 2026",
             PublicId = "E26",
             Venue = "Eastnor Castle Deer Park",
@@ -35,7 +31,7 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
         {
             new CpcxUser
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid(),
                 UserName = "a@example.com",
                 NormalizedUserName = "A@EXAMPLE.COM",
                 Email = "a@example.com",
@@ -46,7 +42,7 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
             },
             new CpcxUser
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid(),
                 UserName = "b@example.com",
                 NormalizedUserName = "B@EXAMPLE.COM",
                 Email = "b@example.com",
@@ -57,7 +53,7 @@ public class ApplicationDbContext : IdentityDbContext<CpcxUser>
             },
             new CpcxUser
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid(),
                 UserName = "c@example.com",
                 NormalizedUserName = "C@EXAMPLE.COM",
                 Email = "c@example.com",

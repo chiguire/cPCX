@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace cpcx.Entities;
 
-public class CpcxUser : IdentityUser
+public class CpcxUser : IdentityUser<Guid>
 {
     [MaxLength(32)] public string Alias { get; set; } = null!;
     public Pronoun Pronouns { get; set; }

@@ -5,7 +5,7 @@ namespace cpcx.Entities
 {
     public class Event
     {
-        [MaxLength(36)] public string Id { get; set; } = null!;
+        public Guid Id { get; set; }
         [MaxLength(60)] public string Name { get; set; } = null!;
         [MaxLength(3)] public string PublicId { get; set; } = null!;
         public int LastPostcardId { get; set; } = 1;

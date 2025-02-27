@@ -6,7 +6,7 @@ namespace cpcx.Entities
 {
     public class Postcard
     {
-        [MaxLength(36)] public required string Id { get; init; }
+        public Guid Id { get; set; }
 
         public Event Event { get; init; } = null!;
         public required DateTime SentOn {  get; set; }

@@ -25,5 +25,6 @@
         PostcardNotFound,
         TravelingPostcardLimitReached,
         NoAddressesFoundInEvent,
+        MainEventNotSet,
     }
 }

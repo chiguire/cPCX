@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using cpcx.Data;
 using cpcx.Entities;
 using cpcx.Config;
+using cpcx.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,9 @@ builder.Services.Configure<PostcardConfig>(
      builder.Configuration.GetSection(PostcardConfig.Postcard));
 
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IPostcardService, PostcardService>();
+builder.Services.AddSingleton<MainEventService>();
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -27,6 +31,7 @@ builder.Services
         options.User.RequireUniqueEmail = true;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
