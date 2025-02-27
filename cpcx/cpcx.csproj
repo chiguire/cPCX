@@ -32,7 +32,11 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Pages\Admin\Events\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Pages\Event\Join.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Admin\Index.cshtml" />
   </ItemGroup>
 
 </Project>
