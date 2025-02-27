@@ -20,6 +20,7 @@ public class Send(MainEventService mainEventService,
     {
         var eventId = await mainEventService.GetMainEventId();
         var e = await eventService.GetEvent(eventId);
+        
         //await postcardService.SendPostcard(HttpContext.User.FindFirst((ClaimTypes.Name)))
         
         return Page();

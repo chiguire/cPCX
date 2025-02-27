@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using cpcx.Entities;
+using cpcx.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -30,13 +31,17 @@ namespace cpcx.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<CpcxUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly MainEventService _mainEventService;
+        private readonly IEventService _eventService;
 
         public RegisterModel(
             UserManager<CpcxUser> userManager,
             IUserStore<CpcxUser> userStore,
             SignInManager<CpcxUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            MainEventService mainEventService,
+            IEventService eventService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +49,8 @@ namespace cpcx.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _mainEventService = mainEventService;
+            _eventService = eventService;
         }
 
         /// <summary>
@@ -127,6 +134,10 @@ namespace cpcx.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+                    
+                    // Add user automatically to main event
+                    var mainEventId = await _mainEventService.GetMainEventId();
+                    await _eventService.AddUser(mainEventId, user, "");
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
