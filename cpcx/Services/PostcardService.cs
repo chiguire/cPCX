@@ -12,6 +12,7 @@ namespace cpcx.Services
     {
         Task<Postcard> SendPostcard(CpcxUser u, Event e);
         Task<Postcard?> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId);
+        Task<Postcard> GetPostcard(string postcardId);
     }
 
     public class PostcardService(
@@ -104,6 +105,33 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
 
             return postcardToRegister;
+        }
+
+        public async Task<Postcard> GetPostcard(string postcardId)
+        {
+            var postcardIdParts = postcardId.Trim().Split(['-'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            // Postcard ID format: XXX-YYYYY - where XXX is the event publicId (e.g. E26), and YYYYY is at least 1 digit
+            if (postcardIdParts.Length != 2 ||                     // No hyphen in postcard id 
+                postcardIdParts[0].Length != 3 ||                  // event publicId is a 3-character string
+                int.TryParse(postcardIdParts[1], out _) == false)  // postcard number in event is an integer
+            {
+                logger.LogInformation("Postcard ID {postcardId} has incorrect format", postcardId);
+                throw new CPCXException(CPCXErrorCode.PostcardIdInvalidFormat);
+            }
+
+            var p = await context.Postcards.FirstOrDefaultAsync(p =>
+                p.Event.PublicId == postcardIdParts[0] && 
+                p.PostcardId == postcardIdParts[1]
+                );
+
+            if (p == null)
+            {
+                logger.LogInformation("Postcard ID {postcardId} not found", postcardId);
+                throw new CPCXException(CPCXErrorCode.PostcardNotFound);
+            }
+
+            return p;
         }
     }
 }

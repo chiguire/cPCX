@@ -22,6 +22,7 @@
         EventUserAlreadyJoined,
         EventUserNotJoined,
         EventUserAddressEmpty,
+        PostcardIdInvalidFormat,
         PostcardNotFound,
         TravelingPostcardLimitReached,
         NoAddressesFoundInEvent,

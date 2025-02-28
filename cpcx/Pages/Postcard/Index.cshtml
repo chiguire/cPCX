@@ -1,19 +1,8 @@
-@page
+@page "{postcardId}"
 @model cpcx.Pages.Postcard.Index
 
-@{
-    Layout = null;
-}
-
-<!DOCTYPE html>
-
-<html>
-<head>
-    <title></title>
-</head>
-<body>
-<div>
-    
+<div class="text-center">
+    <h1 class="display-4">Postcard @Model.PostcardId</h1>
+    <p>Sent on @Model.Postcard.SentOn by @Model.Postcard.Sender.Alias</p>
+    <p>Received on @Model.Postcard.ReceivedOn by @Model.Postcard.Receiver.Alias</p>
 </div>
-</body>
-</html>
