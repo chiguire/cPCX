@@ -55,6 +55,6 @@ public class Send(MainEventService mainEventService,
             return Page();
         }
 
-        return RedirectToPage("/Postcard/Index", new { postcardId = postcard.Id });
+        return RedirectToPage("/Postcard/Index", new { postcardId = postcard.FullPostCardId });
     }
 }

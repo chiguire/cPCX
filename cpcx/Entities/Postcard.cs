@@ -16,5 +16,7 @@ namespace cpcx.Entities
         
         [MaxLength(10)]
         public required string PostcardId { get; set; }
+
+        public string FullPostCardId => $"{Event.PublicId}-{PostcardId}";
     }
 }

@@ -1,7 +1,7 @@
 @page
 @model cpcx.Pages.Postcard.Send
 
-<div class="text-center">
+<div>
     <h1 class="display-4">Send a Postcard</h1>
     <p>Travelling: @Model.TravellingPostcards out of @Model.MaxTravellingPostcards postcards</p>
     
@@ -24,7 +24,7 @@
             <input type="checkbox" data-val="true"
                    data-val-required="Please tick this statement before receiving an address."
                    id="SendPostcardNoticeAcknowledged"> <p>I've read the notes above and want to receive an address to where I'll send a postcard.</p>
-            <submit />
+            <input type="submit" value="Request Address" />
         </form>
     }
     else

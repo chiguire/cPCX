@@ -33,6 +33,10 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.NoAddressesFoundInEvent);
             }
 
+            var postcardId = await eventService.GetNextEventPostcardId(e.Id);
+            
+            logger.LogInformation("User {Sender} will send a postcard to {Receiver} at {Address}, PCID {EPID}-{PCID}", u.UserName, chosenAddress.User.UserName, chosenAddress.Address, e.PublicId, postcardId);
+
             var np = new Postcard
             {
                 Id = Guid.NewGuid(),
@@ -40,7 +44,7 @@ namespace cpcx.Services
                 Sender = u,
                 Receiver = chosenAddress.User,
                 SentOn = DateTime.UtcNow,
-                PostcardId = await eventService.GetNextEventPostcardId(e.Id),
+                PostcardId = postcardId,
             };
 
             context.Postcards.Add(np);
@@ -58,25 +62,28 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.EventNotFound);
             }
 
-            var eu = await context.EventUsers.FindAsync(eventId, u.Id);
-            if (eu == null)
+            if (await context.EventUsers.FindAsync(eventId, u.Id) == null)
             {
                 logger.LogError("User {UserId} is not part of event {Event}", u.Id, eventId);
                 throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
             }
 
-            var address = await context.EventUsers.FirstOrDefaultAsync(
-                eu_ =>
+            var blockedUserIds = u.BlockedUsers?.Select(u => u.Id).ToList() ?? [];
+
+            var address = await context.EventUsers
+                .Include(eu => eu.User)
+                .FirstOrDefaultAsync(
+                eu =>
                     // Postcards from THIS event
-                    eu_.EventId == eventId &&
+                    eu.EventId == eventId &&
                     // Recipient is part of THIS event
-                    eu_.ActiveInEvent &&
+                    eu.ActiveInEvent &&
                     // Sender can't send a postcard to themselves
-                    eu_.UserId != u.Id &&
+                    eu.UserId != u.Id &&
                     // Recipient has this user blocked
-                    u.BlockedUsers.Find(bu => bu.Id == eu_.UserId) == null &&
+                    !blockedUserIds.Contains(u.Id) &&
                     // Recipient can still receive postcards if they have sent a couple more postcards than they have received
-                    eu_.PostcardsSent - eu_.PostcardsReceived < _postcardConfig.MaxDifferenceBetweenSentAndReceived
+                    eu.PostcardsSent - eu.PostcardsReceived < _postcardConfig.MaxDifferenceBetweenSentAndReceived
                     );
             
             return address;
@@ -120,11 +127,15 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.PostcardIdInvalidFormat);
             }
 
-            var p = await context.Postcards.FirstOrDefaultAsync(p =>
+            var p = await context.Postcards
+                .Include(p => p.Event)
+                .Include(p => p.Sender)
+                .Include(p => p.Receiver)
+                .FirstOrDefaultAsync(p =>
                 p.Event.PublicId == postcardIdParts[0] && 
                 p.PostcardId == postcardIdParts[1]
                 );
-
+            
             if (p == null)
             {
                 logger.LogInformation("Postcard ID {postcardId} not found", postcardId);
