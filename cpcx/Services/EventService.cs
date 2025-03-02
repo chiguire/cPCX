@@ -18,6 +18,7 @@ namespace cpcx.Services
         Task SetEventVenue(Guid id, string value);
         Task SetEventVisible(Guid id, bool value);
         Task<string> GetNextEventPostcardId(Guid id);
+        
     }
 
     public class EventService(ApplicationDbContext context, IMapper mapper, ILogger<EventService> logger)

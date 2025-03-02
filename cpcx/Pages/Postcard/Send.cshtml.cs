@@ -1,3 +1,4 @@
+using cpcx.Config;
 using cpcx.Entities;
 using cpcx.Exceptions;
 using cpcx.Services;
@@ -5,17 +6,34 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 
 namespace cpcx.Pages.Postcard;
 
 [Authorize]
 public class Send(MainEventService mainEventService,
+                  IUserService userService,
                   UserManager<CpcxUser> userManager,
                   IEventService eventService, 
+                  IOptionsSnapshot<PostcardConfig> postcardConfig,
                   IPostcardService postcardService) : PageModel
 {
-    public IActionResult OnGet()
+    private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
+    
+    public int TravellingPostcards { get; set; }
+    public int MaxTravellingPostcards { get; set; }
+    public bool CanUserSendPostcards { get; set; }
+    
+    public async Task<IActionResult> OnGet()
     {
+        var us = await userManager.GetUserAsync(User);
+        var eventId = await mainEventService.GetMainEventId();
+        var @event = await eventService.GetEvent(eventId);
+        
+        TravellingPostcards = await userService.GetTravellingPostcards(us!, @event!);
+        MaxTravellingPostcards = _postcardConfig.MaxTravellingPostcards;
+        CanUserSendPostcards = TravellingPostcards < MaxTravellingPostcards;
+        
         return Page();
     }
 
@@ -23,13 +41,13 @@ public class Send(MainEventService mainEventService,
     {
         var us = await userManager.GetUserAsync(User);
         var eventId = await mainEventService.GetMainEventId();
-        var ev = await eventService.GetEvent(eventId);
+        var @event = await eventService.GetEvent(eventId);
 
         Entities.Postcard? postcard = null;
 
         try
         {
-            postcard = await postcardService.SendPostcard(us!, ev!);
+            postcard = await postcardService.SendPostcard(us!, @event!);
         }
         catch (CPCXException e)
         {

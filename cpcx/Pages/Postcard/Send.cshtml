@@ -3,27 +3,32 @@
 
 <div class="text-center">
     <h1 class="display-4">Send a Postcard</h1>
-    <p>Traveling: X out of X postcards</p>
-    <p>Please read with care:</p>
-    <ul>
-        <li>
-            You will be given a Postcard ID that you must write on the postcard - the recipient will need it to
-            register your postcard on this website.
-        </li>
-        <li>
-            A copy of the address you should mail the postcard to will be available here.
-        </li>
-        <li>
-            Please read the Community Guidelines before exchanging any postacrds.
-        </li>
-    </ul>
-    <form method="post">
-        <input type="checkbox" data-val="true"
-               data-val-required="Please tick this statement before receiving an address."
-               id="SendPostcardNoticeAcknowledged"> <p>I've read the notes above and want to receive an address to where I'll send a postcard.</p>
-        <submit />
-    </form>
+    <p>Travelling: @Model.TravellingPostcards out of @Model.MaxTravellingPostcards postcards</p>
     
-
-    
+    @if (Model.CanUserSendPostcards)
+    {
+        <p>Please read with care:</p>
+        <ul>
+            <li>
+                You will be given a Postcard ID that you must write on the postcard - the recipient will need it to
+                register your postcard on this website.
+            </li>
+            <li>
+                A copy of the address you should mail the postcard to will be available here.
+            </li>
+            <li>
+                Please read the Community Guidelines before exchanging any postacrds.
+            </li>
+        </ul>
+        <form method="post">
+            <input type="checkbox" data-val="true"
+                   data-val-required="Please tick this statement before receiving an address."
+                   id="SendPostcardNoticeAcknowledged"> <p>I've read the notes above and want to receive an address to where I'll send a postcard.</p>
+            <submit />
+        </form>
+    }
+    else
+    {
+        <p>You have reached the maximum amount of travelling postcards. Please allow your recipients to register their postcards, or wait until the postcards expire.</p>
+    }
 </div>

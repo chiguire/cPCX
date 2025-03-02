@@ -13,6 +13,7 @@ builder.Services.Configure<PostcardConfig>(
      builder.Configuration.GetSection(PostcardConfig.Postcard));
 
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IPostcardService, PostcardService>();
 builder.Services.AddSingleton<MainEventService>();

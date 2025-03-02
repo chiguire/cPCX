@@ -39,6 +39,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 PasswordHash = devpassword,
                 Alias = "aaa",
                 Pronouns = Pronoun.Male,
+                SecurityStamp = Guid.NewGuid().ToString(),
             },
             new CpcxUser
             {
@@ -50,6 +51,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 PasswordHash = devpassword,
                 Alias = "bbb",
                 Pronouns = Pronoun.Female,
+                SecurityStamp = Guid.NewGuid().ToString(),
             },
             new CpcxUser
             {
@@ -61,6 +63,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 PasswordHash = devpassword,
                 Alias = "ccc",
                 Pronouns = Pronoun.Neutral,
+                SecurityStamp = Guid.NewGuid().ToString(),
             },
         };
         var initialEventUserList = new List<EventUser>
