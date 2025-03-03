@@ -1,9 +1,10 @@
+using cpcx.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace cpcx.Pages;
 
-public class IndexModel : PageModel
+public class IndexModel : MessagePageModel
 {
     private readonly ILogger<IndexModel> _logger;
 

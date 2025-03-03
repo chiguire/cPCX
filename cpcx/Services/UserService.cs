@@ -35,12 +35,10 @@ public class UserService(ApplicationDbContext context, IOptionsSnapshot<Postcard
             p.Sender.Id == user.Id &&
             // Postcards from this event
             p.Event.Id == @event.Id &&
-            (
-                // Postcard hasn't been received
-                p.ReceivedOn != DateTime.UnixEpoch ||
-                // Postcard has expired
-                p.SentOn < postcardExpiredTime
-            )
+            // Postcard hasn't already expired
+            p.SentOn >= postcardExpiredTime &&
+            // Postcard hasn't been registered yet
+            (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch)
         );
         
         return travellingPostcardCount;

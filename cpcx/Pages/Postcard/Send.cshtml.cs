@@ -1,7 +1,9 @@
 using cpcx.Config;
 using cpcx.Entities;
 using cpcx.Exceptions;
+using cpcx.Models;
 using cpcx.Services;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,9 +18,12 @@ public class Send(MainEventService mainEventService,
                   UserManager<CpcxUser> userManager,
                   IEventService eventService, 
                   IOptionsSnapshot<PostcardConfig> postcardConfig,
-                  IPostcardService postcardService) : PageModel
+                  IPostcardService postcardService) : MessagePageModel
 {
     private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
+    
+    [BindProperty]
+    public bool NotesAcknowledged { get; set; }
     
     public int TravellingPostcards { get; set; }
     public int MaxTravellingPostcards { get; set; }
@@ -39,6 +44,12 @@ public class Send(MainEventService mainEventService,
 
     public async Task<IActionResult> OnPost()
     {
+        if (!NotesAcknowledged)
+        {
+            SetStatusMessage("You must acknowledge the message given before requesting an address", FlashMessageType.Warning);
+            return await OnGet();
+        }
+        
         var us = await userManager.GetUserAsync(User);
         var eventId = await mainEventService.GetMainEventId();
         var @event = await eventService.GetEvent(eventId);
@@ -51,10 +62,12 @@ public class Send(MainEventService mainEventService,
         }
         catch (CPCXException e)
         {
-            // TODO - Set status message
+            SetStatusMessage($"There was an error when trying to create a postcard: {CPCXException.ErrorCodeMessage(e.ErrorCode)}, please contact the administrator", FlashMessageType.Error);
             return Page();
         }
 
+        SetStatusMessage("You're sending a postcard! Please write the postcard ID separately from the address", FlashMessageType.Success);
+        
         return RedirectToPage("/Postcard/Index", new { postcardId = postcard.FullPostCardId });
     }
 }

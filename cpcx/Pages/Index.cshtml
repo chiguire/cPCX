@@ -1,4 +1,5 @@
 ﻿@page
+@using cpcx.Extensions
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
@@ -6,6 +7,14 @@
 
 <div>
     <h1 class="display-4">Welcome to cPCX</h1>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Message))
+    {
+        <div>
+            @Html.StatusMessage(Model.Message, Model.MessageCssType!.Value)
+        </div>
+    }
+
     <p>Camping PostCard eXchange is here to allow you to send and receive postcards in EMF, through SneakerNet.</p>
     <p>The fundamental idea is: for each postcard you send, you will receive one back from a random member in this event.</p>
     <p>This website is heavily inspired by <a href="https://www.postcrossing.com/about">Postcrossing</a>, 
