@@ -3,6 +3,15 @@
 
 <div class="text-center">
     <h1 class="display-4">Postcard @Model.PostcardId</h1>
-    <p>Sent on @Model.Postcard.SentOn by @Model.Postcard.Sender.Alias</p>
-    <p>Received on @Model.Postcard.ReceivedOn by @Model.Postcard.Receiver.Alias</p>
+    @if (Model.IsTravellingPostcard)
+    {
+        <p>Postcard @Model.Postcard.FullPostCardId will go to...</p>
+        <p>@Model.Postcard.Receiver.Alias (@Model.Postcard.Receiver.Pronouns)</p>
+        <p>Address: @Model.PostcardAddress</p>
+    }
+    else
+    {
+        <p>Sent on @Model.Postcard.SentOn by @Model.Postcard.Sender.Alias</p>
+        <p>Received on @Model.Postcard.ReceivedOn by @Model.Postcard.Receiver.Alias</p>
+    }
 </div>

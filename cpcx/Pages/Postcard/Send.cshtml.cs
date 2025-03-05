@@ -46,7 +46,7 @@ public class Send(MainEventService mainEventService,
     {
         if (!NotesAcknowledged)
         {
-            SetStatusMessage("You must acknowledge the message given before requesting an address", FlashMessageType.Warning);
+            SetStatusMessage("You must acknowledge the message given before requesting an address", StatusMessageType.Warning);
             return await OnGet();
         }
         
@@ -62,11 +62,11 @@ public class Send(MainEventService mainEventService,
         }
         catch (CPCXException e)
         {
-            SetStatusMessage($"There was an error when trying to create a postcard: {CPCXException.ErrorCodeMessage(e.ErrorCode)}, please contact the administrator", FlashMessageType.Error);
+            SetStatusMessage($"There was an error when trying to create a postcard: {CPCXException.ErrorCodeMessage(e.ErrorCode)}, please contact the administrator", StatusMessageType.Error);
             return Page();
         }
 
-        SetStatusMessage("You're sending a postcard! Please write the postcard ID separately from the address", FlashMessageType.Success);
+        SetStatusMessage("You're sending a postcard! Please write the postcard ID separately from the address", StatusMessageType.Success);
         
         return RedirectToPage("/Postcard/Index", new { postcardId = postcard.FullPostCardId });
     }

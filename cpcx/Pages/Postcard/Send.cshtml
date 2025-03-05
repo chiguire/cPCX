@@ -4,10 +4,10 @@
 <div>
     <h1 class="display-4">Send a Postcard</h1>
 
-    @if (!string.IsNullOrWhiteSpace(Model.Message))
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
     {
         <div>
-            @Html.StatusMessage(Model.Message, Model.MessageCssType!.Value)
+            @Html.StatusMessage(Model.StatusMessage, Model.StatusMessageCssType!.Value)
         </div>
     }
 

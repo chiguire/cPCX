@@ -10,6 +10,7 @@ namespace cpcx.Services;
 public interface IUserService
 {
     Task<int> GetTravellingPostcards(CpcxUser user, Event @event);
+    Task<string> GetUserAddress(CpcxUser user, Event @event);
 }
 
 public class UserService(ApplicationDbContext context, IOptionsSnapshot<PostcardConfig> postcardConfig, ILogger<UserService> logger) : IUserService
@@ -42,5 +43,18 @@ public class UserService(ApplicationDbContext context, IOptionsSnapshot<Postcard
         );
         
         return travellingPostcardCount;
+    }
+
+    public async Task<string> GetUserAddress(CpcxUser user, Event @event)
+    {
+        var eventUser = await context.EventUsers.FindAsync(@event.Id, user.Id);
+
+        if (eventUser == null)
+        {
+            logger.LogError("User {UserId} has not joined Event {EventId}", user.Id, @event.Id);
+            throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
+        }
+        
+        return eventUser.Address;
     }
 }

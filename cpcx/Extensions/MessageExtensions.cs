@@ -7,25 +7,25 @@ namespace cpcx.Extensions;
 
 public static class MessageExtensions
 {
-    public static IHtmlContent StatusMessage<TModel>(this IHtmlHelper<TModel> helper, string message, FlashMessageType messageType)
+    public static IHtmlContent StatusMessage<TModel>(this IHtmlHelper<TModel> helper, string message, int messageType)
     {
         string messageCss = "";
 
         switch (messageType)
         {
-            case FlashMessageType.Success:
+            case StatusMessageType.Success:
                 messageCss += "alert-success";
                 break;
 
-            case FlashMessageType.Warning:
+            case StatusMessageType.Warning:
                 messageCss += "alert-warning";
                 break;
 
-            case FlashMessageType.Error:
+            case StatusMessageType.Error:
                 messageCss += "alert-danger";
                 break;
 
-            case FlashMessageType.Info:
+            case StatusMessageType.Info:
                 messageCss += "alert-info";
                 break;
         }

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace cpcx.Models;
@@ -6,14 +7,16 @@ namespace cpcx.Models;
 public class MessagePageModel : PageModel
 {
     [DisplayName("Message: ")]
-    public string? Message { get; set; }
+    [TempData]
+    public string? StatusMessage { get; set; }
 
     [DisplayName("Type: ")]
-    public FlashMessageType? MessageCssType { get; set; }
+    [TempData]
+    public int? StatusMessageCssType { get; set; }
     
-    public void SetStatusMessage(string message, FlashMessageType type)
+    public void SetStatusMessage(string message, int type)
     {
-        Message = message;
-        MessageCssType = type;
+        StatusMessage = message;
+        StatusMessageCssType = type;
     }
 }

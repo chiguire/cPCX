@@ -11,10 +11,17 @@ namespace cpcx.Pages.Postcard;
 
 [Authorize]
 public class Index(UserManager<CpcxUser> userManager,
+                   IUserService userService,
+                   IEventService eventService,
+                   MainEventService mainEventService,
                    IPostcardService postcardService) : MessagePageModel
 {
     public string PostcardId { get; set; } = null!;
     public Entities.Postcard Postcard { get; set; } = null!; 
+    
+    public bool IsTravellingPostcard { get; set; } = false;
+
+    public string PostcardAddress { get; set; }
     
     public async Task<IActionResult> OnGet(string postcardId)
     {
@@ -35,9 +42,19 @@ public class Index(UserManager<CpcxUser> userManager,
                 {
                     return RedirectToPage("/Postcard/Register");
                 }
+                if (p.Sender == us)
+                {
+                    IsTravellingPostcard = true;
+
+                    var mainEventId = await mainEventService.GetMainEventId();
+                    var @event = await eventService.GetEvent(mainEventId);
+                    PostcardAddress = await userService.GetUserAddress(p.Receiver, @event!);
+                    
+                    return Page();
+                }
                 
                 // Postcards aren't public until registered
-                SetStatusMessage($"Postcard {postcardId} not found", FlashMessageType.Error);
+                SetStatusMessage($"Postcard {postcardId} not found", StatusMessageType.Error);
                 return RedirectToPage("/Index");
             }
 
@@ -57,7 +74,7 @@ public class Index(UserManager<CpcxUser> userManager,
                     break;
             }
             
-            SetStatusMessage(msg, FlashMessageType.Error);
+            SetStatusMessage(msg, StatusMessageType.Error);
             return RedirectToPage("/Index");
         }
     }
