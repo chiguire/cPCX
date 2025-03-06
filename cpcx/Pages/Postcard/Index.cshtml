@@ -1,12 +1,22 @@
 @page "{postcardId}"
+@using cpcx.Entities
+@using cpcx.Extensions
 @model cpcx.Pages.Postcard.Index
 
 <div class="text-center">
     <h1 class="display-4">Postcard @Model.PostcardId</h1>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div>
+            @Html.StatusMessage(Model.StatusMessage, Model.StatusMessageCssType!.Value)
+        </div>
+    }
+
     @if (Model.IsTravellingPostcard)
     {
         <p>Postcard @Model.Postcard.FullPostCardId will go to...</p>
-        <p>@Model.Postcard.Receiver.Alias (@Model.Postcard.Receiver.Pronouns)</p>
+        <p>@Model.Postcard.Receiver.Alias (@Model.Postcard.Receiver.Pronouns.GetDescription())</p>
         <p>Address: @Model.PostcardAddress</p>
     }
     else

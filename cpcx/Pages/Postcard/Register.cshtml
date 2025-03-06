@@ -1,19 +1,25 @@
 @page
+@using cpcx.Extensions
 @model cpcx.Pages.Postcard.Register
-
-@{
-    Layout = null;
-}
-
-<!DOCTYPE html>
-
-<html>
-<head>
-    <title></title>
-</head>
-<body>
 <div>
+    <h1 class="display-4">Register a Postcard</h1>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div>
+            @Html.StatusMessage(Model.StatusMessage, Model.StatusMessageCssType!.Value)
+        </div>
+    }
     
+    <p>If you have received a postcard, register it here!</p>
+
+    <form method="post">
+        <div>
+            <label for="PostcardId">Postcard ID:</label> <select asp-for="EventId" asp-items="@Model.EventPublicIds"></select> - <input asp-for="PostcardId" pattern="[0-9]+" />
+        </div>
+        <div>
+            <input type="submit" value="Register Postcard" />
+        </div>
+    </form>
+
 </div>
-</body>
-</html>

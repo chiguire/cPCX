@@ -11,7 +11,7 @@ namespace cpcx.Services
     public interface IPostcardService
     {
         Task<Postcard> SendPostcard(CpcxUser u, Event e);
-        Task<Postcard?> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId);
+        Task<Postcard> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId);
         Task<Postcard> GetPostcard(string postcardId);
     }
 
@@ -89,9 +89,13 @@ namespace cpcx.Services
             return address;
         }
 
-        public async Task<Postcard?> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId)
+        public async Task<Postcard> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId)
         {
-            var postcardToRegister = await context.Postcards.FirstOrDefaultAsync(p =>
+            var postcardToRegister = await context.Postcards
+                .Include(p => p.Event)
+                .Include(p => p.Sender)
+                .Include(p => p.Receiver)
+                .FirstOrDefaultAsync(p =>
                 // Postcard from this event
                 p.Event.PublicId == publicEventId &&
                 // Postcard meant for this user
@@ -102,8 +106,8 @@ namespace cpcx.Services
 
             if (postcardToRegister == null)
             {
-                logger.LogError("Postcard {publicEventId}-{postcardId} not found, or not meant for user {userId}", publicEventId, postcardId, u.Id);
-                throw new CPCXException(CPCXErrorCode.EventNotFound);
+                logger.LogError("Postcard {publicEventId}-{postcardId} not found, or not meant for user {userId}", publicEventId, postcardId, u.UserName);
+                throw new CPCXException(CPCXErrorCode.PostcardNotFound);
             }
             
             postcardToRegister.ReceivedOn = DateTime.UtcNow;

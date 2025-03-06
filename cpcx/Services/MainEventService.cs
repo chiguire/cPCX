@@ -12,11 +12,28 @@ public class MainEventService(IOptions<CpcxConfig> cpcxConfig, IServiceScopeFact
     private readonly CpcxConfig _cpcxConfig = cpcxConfig.Value;
     
     private Guid _mainEventId = Guid.Empty;
+    private string _mainEventPublicId = string.Empty;
 
     public async Task<Guid> GetMainEventId()
     {
         if (_mainEventId != Guid.Empty) return _mainEventId;
 
+        await InitMainEvent();
+
+        return _mainEventId;
+    }
+    
+    public async Task<string> GetMainEventPublicId()
+    {
+        if (_mainEventPublicId != String.Empty) return _mainEventPublicId;
+
+        await InitMainEvent();
+
+        return _mainEventPublicId;
+    }
+
+    private async Task InitMainEvent()
+    {
         Event? mainEvent = null;
 
         using (var scope = scopeFactory.CreateScope())
@@ -41,7 +58,6 @@ public class MainEventService(IOptions<CpcxConfig> cpcxConfig, IServiceScopeFact
         }
 
         _mainEventId = mainEvent.Id;
-
-        return _mainEventId;
+        _mainEventPublicId = mainEvent.PublicId;
     }
 }
