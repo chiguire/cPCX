@@ -42,7 +42,7 @@ public class Register(MainEventService mainEventService,
         //var eventId = EventPublicId.ToGuid(); var mainEventPublicId = (await eventService.GetEvent(eventPublicId)).PublicId; 
         var mainEventPublicId = await mainEventService.GetMainEventPublicId(); // Ignoring the dropdown for now
         
-        logger.LogInformation("User {UserId} tries registering postcard ID {EventId}-{PostcardId}", u!.Alias, mainEventPublicId, PostcardId);
+        logger.LogInformation("User {UserId} tries registering postcard ID {EventId}-{PostcardId}", u!.UserName, mainEventPublicId, PostcardId);
         
         if (string.IsNullOrWhiteSpace(PostcardId) || !int.TryParse(PostcardId, out _))
         {

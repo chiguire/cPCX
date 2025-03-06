@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using cpcx.Entities
+@inject UserManager<CpcxUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -29,7 +32,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Postcard/Register">Register Postcard</a>
                         </li>
                         <li asp-authorize class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/User/Index">Profile</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/User/Index" asp-route-alias="@UserManager.GetUserName(User)" >Profile</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>

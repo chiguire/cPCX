@@ -25,6 +25,14 @@ namespace cpcx.Services
 
         public async Task<Postcard> SendPostcard(CpcxUser u, Event e)
         {
+            var eu = await context.EventUsers.FindAsync(e.Id, u.Id);
+
+            if (eu == null)
+            {
+                logger.LogError("User {UserId} is not part of event {Event}", u.Id, e.Id);
+                throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
+            }
+            
             var chosenAddress = await GetAvailableAddress(u, e.Id);
 
             if (chosenAddress == null)
@@ -91,6 +99,22 @@ namespace cpcx.Services
 
         public async Task<Postcard> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId)
         {
+            var ev = await context.Events.FirstOrDefaultAsync(e => e.PublicId == publicEventId);
+            
+            if (ev == null)
+            {
+                logger.LogError("Event with public ID {EventPublicId} not found", publicEventId);
+                throw new CPCXException(CPCXErrorCode.EventNotFound);
+            }
+            
+            var receiverEu = await context.EventUsers.FindAsync(ev.Id, u.Id);
+
+            if (receiverEu == null)
+            {
+                logger.LogError("User {UserId} is not part of event {Event}", u.Id, ev.Id);
+                throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
+            }
+
             var postcardToRegister = await context.Postcards
                 .Include(p => p.Event)
                 .Include(p => p.Sender)
@@ -110,8 +134,20 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.PostcardNotFound);
             }
             
-            postcardToRegister.ReceivedOn = DateTime.UtcNow;
+            var senderEu = await context.EventUsers.FindAsync(ev.Id, postcardToRegister.Sender.Id);
 
+            if (senderEu == null)
+            {
+                logger.LogError("Postcard {publicEventId}-{postcardId} was found and meant for user {userId} but Sender is not part of the event", publicEventId, postcardId, u.UserName);
+                throw new CPCXException(CPCXErrorCode.Unknown);
+            }
+            
+            postcardToRegister.ReceivedOn = DateTime.UtcNow;
+            senderEu.PostcardsSent += 1;
+            receiverEu.PostcardsReceived += 1;
+            
+            context.EventUsers.Update(senderEu);
+            context.EventUsers.Update(receiverEu);
             context.Postcards.Update(postcardToRegister);
             await context.SaveChangesAsync();
 

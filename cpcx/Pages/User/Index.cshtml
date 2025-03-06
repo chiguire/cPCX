@@ -1,19 +1,23 @@
-@page
+@page "{alias}"
+@using cpcx.Entities
+@using cpcx.Extensions
 @model cpcx.Pages.User.Index
 
-@{
-    Layout = null;
-}
 
-<!DOCTYPE html>
+<div class="text-center">
+    <h1 class="display-4">@Model.UserProfile.UserName</h1>
 
-<html>
-<head>
-    <title></title>
-</head>
-<body>
-<div>
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div>
+            @Html.StatusMessage(Model.StatusMessage, Model.StatusMessageCssType!.Value)
+        </div>
+    }
+
+    <h2>About @Model.UserProfile.UserName</h2>
     
+    <p><b>Postcards Sent:</b> @Model.ProfileStats.PostcardsSent</p>
+    <p><b>Postcards Received:</b> @Model.ProfileStats.PostcardsReceived</p>
+    
+    <p>@Model.UserProfile.ProfileDescription</p>
 </div>
-</body>
-</html>
