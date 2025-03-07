@@ -48,7 +48,7 @@ public class Index(UserManager<CpcxUser> userManager,
 
                     var mainEventId = await mainEventService.GetMainEventId();
                     var @event = await eventService.GetEvent(mainEventId);
-                    PostcardAddress = await userService.GetUserAddress(p.Receiver, @event!);
+                    PostcardAddress = await userService.GetUserAddress(p.Receiver.Id, @event!.Id);
                     
                     return Page();
                 }

@@ -18,7 +18,6 @@ namespace cpcx.Services
         Task SetEventVenue(Guid id, string value);
         Task SetEventVisible(Guid id, bool value);
         Task<string> GetNextEventPostcardId(Guid id);
-        Task<EventUser> GetEventUser(Guid id, CpcxUser u);
 
     }
 
@@ -218,19 +217,6 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
 
             return nextPostcardId.ToString();
-        }
-
-        public async Task<EventUser> GetEventUser(Guid id, CpcxUser u)
-        {
-            var eu = await context.EventUsers.FindAsync(id, u.Id);
-
-            if (eu == null)
-            {
-                logger.LogError("User {UserId} is not part of event {Event}", u.Id, id);
-                throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
-            }
-            
-            return eu;
         }
     }
 }

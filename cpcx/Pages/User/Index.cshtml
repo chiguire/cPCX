@@ -1,8 +1,11 @@
 @page "{alias}"
+@using cpcx.Entities
 @model cpcx.Pages.User.Index
 
 @{
     ViewData["Title"] = $"{Model.UserProfile}'s Profile";
+
+    ViewData["Pronouns"] = (Model.UserProfile.Pronouns != Pronoun.Empty ? $" ({Model.UserProfile.Pronouns.GetDescription()})" : "");
 }
 
 <div class="text-center">
@@ -10,10 +13,11 @@
 
     <partial name="_StatusMessage" model="Model.StatusMessage" />
 
-    <h2>About @Model.UserProfile.UserName</h2>
+    <h2>About @Model.UserProfile.UserName@ViewData["Pronouns"]</h2>
     
     <p><b>Postcards Sent:</b> @Model.ProfileStats.PostcardsSent</p>
     <p><b>Postcards Received:</b> @Model.ProfileStats.PostcardsReceived</p>
     
+    <p><b>Profile Description:</b></p>
     <p>@Model.UserProfile.ProfileDescription</p>
 </div>

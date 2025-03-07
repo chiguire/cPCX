@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace cpcx.Pages.User;
 
-public class Index(UserManager<CpcxUser> userManager, IEventService eventService, MainEventService mainEventService) : MessagePageModel
+public class Index(UserManager<CpcxUser> userManager, IUserService userService, MainEventService mainEventService) : MessagePageModel
 {
     public CpcxUser UserProfile { get; set; }
     
@@ -23,7 +23,7 @@ public class Index(UserManager<CpcxUser> userManager, IEventService eventService
             return RedirectToPage("/Index");
         }
 
-        var eu = await eventService.GetEventUser(mainEventId, us);
+        var eu = await userService.GetEventUser(mainEventId, us.Id);
 
         UserProfile = us;
         ProfileStats = eu;
