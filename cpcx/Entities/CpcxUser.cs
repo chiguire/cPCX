@@ -5,11 +5,10 @@ namespace cpcx.Entities;
 
 public class CpcxUser : IdentityUser<Guid>
 {
-    [ProtectedPersonalData]
+    [PersonalData]
     public Pronoun Pronouns { get; set; }
-    
-    [ProtectedPersonalData]
-    [MaxLength(3000)] public string ProfileDescription { get; set; } = null!;
+
+    [PersonalData] [MaxLength(3000)] public string ProfileDescription { get; set; } = "";
     
     public List<CpcxUser>? BlockedUsers { get; set; } = null!;
     

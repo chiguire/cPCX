@@ -1,0 +1,9 @@
+﻿@model string
+@using cpcx.Extensions
+
+@if (!string.IsNullOrWhiteSpace(Model))
+{
+    <div>
+        @Html.StatusMessage(Model)
+    </div>
+}

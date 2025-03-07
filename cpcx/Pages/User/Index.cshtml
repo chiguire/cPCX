@@ -1,18 +1,14 @@
 @page "{alias}"
-@using cpcx.Entities
-@using cpcx.Extensions
 @model cpcx.Pages.User.Index
 
+@{
+    ViewData["Title"] = $"{Model.UserProfile}'s Profile";
+}
 
 <div class="text-center">
-    <h1 class="display-4">@Model.UserProfile.UserName</h1>
+    <h1 class="display-4">@ViewData["Title"]</h1>
 
-    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
-    {
-        <div>
-            @Html.StatusMessage(Model.StatusMessage, Model.StatusMessageCssType!.Value)
-        </div>
-    }
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
 
     <h2>About @Model.UserProfile.UserName</h2>
     

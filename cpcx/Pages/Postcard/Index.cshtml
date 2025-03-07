@@ -1,17 +1,15 @@
 @page "{postcardId}"
 @using cpcx.Entities
-@using cpcx.Extensions
 @model cpcx.Pages.Postcard.Index
 
-<div class="text-center">
-    <h1 class="display-4">Postcard @Model.PostcardId</h1>
+@{
+    ViewData["Title"] = $"Postcard {Model.PostcardId}";
+}
 
-    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
-    {
-        <div>
-            @Html.StatusMessage(Model.StatusMessage, Model.StatusMessageCssType!.Value)
-        </div>
-    }
+<div class="text-center">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
 
     @if (Model.IsTravellingPostcard)
     {

@@ -156,7 +156,7 @@ namespace cpcx.Services
 
         public async Task<Postcard> GetPostcard(string postcardId)
         {
-            var postcardIdParts = postcardId.Trim().Split(['-'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var postcardIdParts = postcardId.Trim().Split("-", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             // Postcard ID format: XXX-YYYYY - where XXX is the event publicId (e.g. E26), and YYYYY is at least 1 digit
             if (postcardIdParts.Length != 2 ||                     // No hyphen in postcard id 

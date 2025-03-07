@@ -47,7 +47,7 @@ public class Register(MainEventService mainEventService,
         if (string.IsNullOrWhiteSpace(PostcardId) || !int.TryParse(PostcardId, out _))
         {
             SetStatusMessage("Please enter a valid postcard id, it must be digits only", StatusMessageType.Error);
-            return await OnGet();
+            return RedirectToPage();
         }
 
         try
@@ -62,11 +62,11 @@ public class Register(MainEventService mainEventService,
             if (e.ErrorCode == CPCXErrorCode.PostcardNotFound)
             {
                 SetStatusMessage("Postcard not found, please check the postcard ID again", StatusMessageType.Error);
-                return await OnGet();
+                return RedirectToPage();
             }
             
             SetStatusMessage("Unknown error, contact admin", StatusMessageType.Error);
-            return await OnGet();
+            return RedirectToPage();
         }
     }
 }

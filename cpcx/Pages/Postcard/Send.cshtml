@@ -1,15 +1,14 @@
 @page
-@using cpcx.Extensions
 @model cpcx.Pages.Postcard.Send
-<div>
-    <h1 class="display-4">Send a Postcard</h1>
 
-    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
-    {
-        <div>
-            @Html.StatusMessage(Model.StatusMessage, Model.StatusMessageCssType!.Value)
-        </div>
-    }
+@{
+    ViewData["Title"] = "Send a Postcard";
+}
+
+<div class="text-center">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
 
     <p>Travelling: @Model.TravellingPostcards out of @Model.MaxTravellingPostcards postcards</p>
     
@@ -25,7 +24,7 @@
                 A copy of the address you should mail the postcard to will be available here.
             </li>
             <li>
-                Please read the Community Guidelines before exchanging any postacrds.
+                Please read the Community Guidelines before exchanging any postcards.
             </li>
         </ul>
         <form method="post">

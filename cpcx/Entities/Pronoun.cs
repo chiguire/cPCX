@@ -5,6 +5,7 @@ namespace cpcx.Entities;
 
 public enum Pronoun
 {
+    [Description("<Empty>")]
     Empty,
     [Description("He/him")]
     Male,

@@ -47,7 +47,7 @@ public class Send(MainEventService mainEventService,
         if (!NotesAcknowledged)
         {
             SetStatusMessage("You must acknowledge the message given before requesting an address", StatusMessageType.Warning);
-            return await OnGet();
+            return RedirectToPage();
         }
         
         var us = await userManager.GetUserAsync(User);
@@ -63,7 +63,7 @@ public class Send(MainEventService mainEventService,
         catch (CPCXException e)
         {
             SetStatusMessage($"There was an error when trying to create a postcard: {CPCXException.ErrorCodeMessage(e.ErrorCode)}, please contact the administrator", StatusMessageType.Error);
-            return Page();
+            return RedirectToPage("/Index");
         }
 
         SetStatusMessage("You're sending a postcard! Please write the postcard ID separately from the address", StatusMessageType.Success);

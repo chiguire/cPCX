@@ -1,15 +1,13 @@
 @page
-@using cpcx.Extensions
 @model cpcx.Pages.Postcard.Register
-<div>
-    <h1 class="display-4">Register a Postcard</h1>
+@{
+    ViewData["Title"] = "Register a Postcard";
+}
 
-    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
-    {
-        <div>
-            @Html.StatusMessage(Model.StatusMessage, Model.StatusMessageCssType!.Value)
-        </div>
-    }
+<div class="text-center">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
     
     <p>If you have received a postcard, register it here!</p>
 

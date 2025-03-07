@@ -7,9 +7,15 @@ namespace cpcx.Extensions;
 
 public static class MessageExtensions
 {
-    public static IHtmlContent StatusMessage<TModel>(this IHtmlHelper<TModel> helper, string message, int messageType)
+    public static IHtmlContent StatusMessage<TModel>(this IHtmlHelper<TModel> helper, string fullStatusMessage)
     {
-        string messageCss = "";
+        var messageParts = fullStatusMessage.Split('%', 2, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (!int.TryParse(messageParts[0], out var messageType))
+        {
+            throw new Exception("Status message incorrect format");
+        }
+        var message = messageParts[1];
+        var messageCss = "";
 
         switch (messageType)
         {
