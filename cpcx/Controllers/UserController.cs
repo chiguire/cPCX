@@ -1,15 +1,18 @@
 using Azure;
 using cpcx.Entities;
 using cpcx.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace cpcx.Controllers;
 
-public class UserController(IUserService userService)
+[AllowAnonymous]
+public class UserController(UserManager<CpcxUser> userManager) : Controller
 {
     [HttpPost]
-    public async Task<bool> CheckUserAliasAsync([FromBody]string aliasCandidate)
+    public async Task<ActionResult<bool>> CheckUserAliasAsync([FromBody]string aliasCandidate)
     {
-        return true;
+        return Ok((await userManager.FindByNameAsync(aliasCandidate)) is null);
     }
 }

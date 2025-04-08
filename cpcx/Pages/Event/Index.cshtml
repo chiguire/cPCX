@@ -1,0 +1,34 @@
+@page "{eventPublicId?}"
+@using Microsoft.IdentityModel.Tokens
+@model cpcx.Pages.Event.Index
+
+@{
+    ViewData["Title"] = $"Events";
+}
+
+<div class="row">
+    <div class="col-md-6">
+
+        <h1 class="display-4">@ViewData["Title"]</h1>
+
+        @foreach (var ev in Model.EventsJoinedByUser!)
+        {
+            <div>
+                <form method="post">
+                    <h2>@ev.Event.Name</h2>
+                    <div>
+                        <textarea asp-for="Input!.AddressInEvent">@ev.Address</textarea>
+                        <label asp-for="Input.AddressInEvent" class="form-label"></label>
+                        <span asp-validation-for="Input.AddressInEvent" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <input asp-for="Input.UserActiveInEvent" value="@ev.ActiveInEvent" />
+                        <label asp-for="Input.UserActiveInEvent" class="form-label"></label>
+                    </div>
+                    <input type="hidden" asp-for="Input.EventId" value="@ev.EventId"/>
+                    <button id="update-event-@ev.Event.PublicId-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+                </form>
+            </div>
+        }
+    </div>
+</div>

@@ -6,23 +6,18 @@
 }
 
 <h3>@ViewData["Title"]</h3>
-<partial name="_StatusMessage" for="StatusMessage" />
+<partial name="_StatusMessage" for="@Model.StatusMessage" />
 <div class="row">
     <div class="col-md-6">
         <form id="profile-form" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             <div class="form-floating mb-3">
-                <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
-                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Input.Username" class="form-control" placeholder="Please choose your username." disabled />
+                <label asp-for="Input.Username" class="form-label"></label>
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="Input.Pronoun" asp-items="@Model.Pronouns"></select>
                 <label asp-for="Input.Pronoun" class="form-label"></label>
-            </div>
-            <div class="form-floating mb-3">
-                <textarea asp-for="Input.Address"></textarea>
-                <label asp-for="Input.Address" class="form-label"></label>
-                <span asp-validation-for="Input.Address" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <textarea asp-for="Input.ProfileDescription"></textarea>

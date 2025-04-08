@@ -1,16 +1,20 @@
 using cpcx.Entities;
 using cpcx.Models;
 using cpcx.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace cpcx.Pages.User;
 
+[Authorize]
 public class Index(UserManager<CpcxUser> userManager, IUserService userService, MainEventService mainEventService) : MessagePageModel
 {
-    public CpcxUser UserProfile { get; set; }
+    public CpcxUser UserProfile { get; set; } = null!;
     
-    public EventUser ProfileStats { get; set; }
+    public EventUser ProfileStats { get; set; } = null!;
+
+    public bool OwnProfile { get; set; } = false;
     
     public async Task<IActionResult> OnGet(string alias)
     {
@@ -27,6 +31,7 @@ public class Index(UserManager<CpcxUser> userManager, IUserService userService, 
 
         UserProfile = us;
         ProfileStats = eu;
+        OwnProfile = (await userManager.GetUserAsync(User))!.Id == us.Id;
 
         return Page();
     }

@@ -21,7 +21,7 @@ public class Index(UserManager<CpcxUser> userManager,
     
     public bool IsTravellingPostcard { get; set; } = false;
 
-    public string PostcardAddress { get; set; }
+    public string? PostcardAddress { get; set; }
     
     public async Task<IActionResult> OnGet(string postcardId)
     {

@@ -3,12 +3,14 @@ using cpcx.Data;
 using cpcx.Entities;
 using cpcx.Exceptions;
 using cpcx.Inputs;
+using Microsoft.EntityFrameworkCore;
 
 namespace cpcx.Services
 {
     public interface IEventService
     {
         Task AddUser(Guid id, CpcxUser u, string address);
+        Task UpdateUserAddress(Guid id, CpcxUser u, string address);
         Task CreateEvent(EventInput eventInput);
         Task<Event?> GetEvent(Guid id);
         Task RemoveUser(Guid id, CpcxUser u);
@@ -18,6 +20,8 @@ namespace cpcx.Services
         Task SetEventVenue(Guid id, string value);
         Task SetEventVisible(Guid id, bool value);
         Task<string> GetNextEventPostcardId(Guid id);
+        Task<List<Event>> GetAvailableEvents();
+        Task<List<EventUser>> GetEventsJoinedByUser(Guid userId);
 
     }
 
@@ -217,6 +221,28 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
 
             return nextPostcardId.ToString();
+        }
+
+        public async Task<List<Event>> GetAvailableEvents()
+        {
+            var evs = await context.Events
+                .Where(
+                ev => ev.Visible && ev.Open
+            ).ToListAsync();
+
+            return evs;
+        }
+        
+        public async Task<List<EventUser>> GetEventsJoinedByUser(Guid userId)
+        {
+            var evs = await context.EventUsers
+                .Include(ev => ev.Event)
+                .Include(ev => ev.User)
+                .Where(
+                    eu => eu.User.Id == userId
+                ).ToListAsync();
+
+            return evs;
         }
     }
 }

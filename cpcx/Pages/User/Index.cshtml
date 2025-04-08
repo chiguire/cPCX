@@ -20,4 +20,9 @@
     
     <p><b>Profile Description:</b></p>
     <p>@Model.UserProfile.ProfileDescription</p>
+    
+    @if (!Model.OwnProfile)
+    {
+        <p>Report Profile</p>
+    }
 </div>

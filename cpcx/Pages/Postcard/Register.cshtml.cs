@@ -18,9 +18,9 @@ public class Register(MainEventService mainEventService,
 {
     public List<SelectListItem> EventPublicIds { get; set; } = [];
     
-    [Required] [BindProperty] public string EventId { get; set; }
+    [Required] [BindProperty] public string? EventId { get; set; }
     
-    [Required] [BindProperty] public string PostcardId { get; set; }
+    [Required] [BindProperty] public string? PostcardId { get; set; }
     
     public async Task<IActionResult> OnGet()
     {

@@ -3,10 +3,12 @@
 #nullable disable
 
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using cpcx.Entities;
+using cpcx.Models;
 using cpcx.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,16 +22,8 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
         SignInManager<CpcxUser> signInManager,
         IUserService userService,
         MainEventService mainEventService)
-        : PageModel
+        : MessagePageModel
     {
-        public string Username { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        [TempData]
-        public string StatusMessage { get; set; }
 
         [BindProperty]
         public InputModel Input { get; set; }
@@ -38,15 +32,12 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
 
         public class InputModel
         {
+            [Display(Name = "Username")]
+            public string Username { get; set; }
+            
             [Display(Name = "Pronouns")]
             public Pronoun Pronoun { get; set; }
-            [Display(Name = "Active in EMF")]
-            public bool ActiveInEmf { get; set; }
-            
-            [Display(Name = "Address in EMF")]
-            [Required(ErrorMessage = "Address is required")]
-            public string Address { get; set; }
-            
+
             [Display(Name = "Profile Description")]
             [MaxLength(3000)]
             [Required(ErrorMessage = "Profile Description is required")]
@@ -57,9 +48,6 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
         {
             var userName = await userManager.GetUserNameAsync(user);
             var mainEventId = await mainEventService.GetMainEventId();
-            var eventUser = await userService.GetEventUser(mainEventId, user.Id);
-
-            Username = userName;
 
             Pronouns = [];
 
@@ -76,9 +64,8 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             
             Input = new InputModel
             {
+                Username = userName,
                 Pronoun = user.Pronouns,
-                ActiveInEmf = eventUser.ActiveInEvent,
-                Address = eventUser.Address,
                 ProfileDescription = user.ProfileDescription,
             };
         }
@@ -122,16 +109,6 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
                 await userService.SetUserProfileDescription(user, Input.ProfileDescription);
             }
 
-            if (eventUser.Address != Input.Address)
-            {
-                await userService.SetUserAddress(user.Id, mainEventId, Input.Address);
-            }
-            
-            if (eventUser.ActiveInEvent != Input.ActiveInEmf)
-            {
-                await userService.SetUserActiveInEvent(user.Id, mainEventId, Input.ActiveInEmf);
-            }
-            
             await signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
