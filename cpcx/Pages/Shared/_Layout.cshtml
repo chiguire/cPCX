@@ -25,17 +25,19 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
                         </li>
-                        <li asp-authorize class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Postcard/Send">Send Postcard</a>
-                        </li>
-                        <li asp-authorize class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Postcard/Register">Register Postcard</a>
+                        <li asp-authorize class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Postcards
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Postcard/Send">Send a Postcard</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Postcard/Register">Register a Postcard</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Hi!</a></li>
+                            </ul>
                         </li>
                         <li asp-authorize class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Event/Index" asp-route-eventPublicId="EMF26">EMF</a>
-                        </li>
-                        <li asp-authorize class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/User/Index" asp-route-alias="@UserManager.GetUserName(User)" >Profile</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Guidelines">Community Guidelines</a>
