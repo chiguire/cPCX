@@ -4,22 +4,63 @@
     ViewData["Title"] = "Register a Postcard";
 }
 
-<div class="text-center" xmlns="http://www.w3.org/1999/html">
+<div>
     <h1 class="display-4">@ViewData["Title"]</h1>
 
     <partial name="_StatusMessage" model="Model.StatusMessage" />
     
-    <p>If you have received a postcard, register it here!</p>   
+    <div class="container">
+        <div class="row align-items-start">
+            <div class="col">
+                <p>If you have received a postcard, register it here!</p>
 
-    <form method="post">
-        <div>
-            <label for="PostcardId">Postcard ID:</label> <select asp-for="EventId" asp-items="@Model.EventPublicIds"></select> - <input asp-for="PostcardId" pattern="[0-9]+" />
+                <form method="post">
+                    <div class="input-group mb-3">
+                        <label asp-for="PostcardId" class="input-group-text"></label>
+                        <select asp-for="EventId" asp-items="@Model.EventPublicIds" class="form-select" style="max-width: 5em;" disabled="disabled"></select>
+                        <span class="input-group-text">-</span>
+                        <input asp-for="PostcardId" pattern="[0-9]+" class="form-control" minlength="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="MessageToSender" class="input-group-text"></label>
+                        <textarea asp-for="MessageToSender" class="form-control" style="height: 100px" maxlength="5000"
+                            placeholder="Use this space to send a thank you message to the sender of the postcard."></textarea>
+                    </div>
+                    <div class="position-relative mb-3">
+                        <input asp-for="ReceiverGetsCopyOfMessage" class="form-check-input"> <label asp-for="ReceiverGetsCopyOfMessage" class="form-check-label"></label>
+                        
+                        <div id="MessageToSenderLengthDisplay" class="position-absolute top-0 end-0">
+                            0/5000
+                        </div>
+                    </div>
+                    <input type="submit" value="Register Postcard" class="btn btn-primary"/>
+                </form>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Need help?</h5>
+                        <p>Have you received a postcard without a Postcard ID, or it is an incorrect ID? We can help <a asp-page="/Postcard/SenderUnknown">search the Postcard ID</a> for you.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>
-            <input type="submit" value="Register Postcard" />
-        </div>
-    </form>
-    
-    <p>Have you received a postcard without a Postcard ID or it is incorrect? We can help <a asp-page="/Postcard/SenderUnknown">search the Postcard ID</a> for you.</p>
-
+    </div>
 </div>
+
+@section Scripts {
+    <script language="JavaScript">
+        function updateLength() {
+            const m = $("#MessageToSender");
+            $("#MessageToSenderLengthDisplay").text(m.val().length + "/" + m[0].maxLength);
+        }
+        $().ready(function() {
+            updateLength();
+        });
+        $("#MessageToSender").on("input", function() {
+            updateLength();
+        });
+    
+    
+    </script>
+}

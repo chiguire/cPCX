@@ -20,7 +20,15 @@ public class Register(MainEventService mainEventService,
     
     [Required] [BindProperty] public string? EventId { get; set; }
     
+    [Display(Name = "Postcard ID:")]
     [Required] [BindProperty] public string? PostcardId { get; set; }
+    
+    [Display(Name = "Write a message to the sender:")]
+    [Length(minimumLength: 0, maximumLength: 5000)]
+    [BindProperty] public string? MessageToSender { get; set; }
+    
+    [Display(Name = "Receive a copy of the message")]
+    [BindProperty] public bool ReceiverGetsCopyOfMessage { get; set; }
     
     public async Task<IActionResult> OnGet()
     {
@@ -53,6 +61,12 @@ public class Register(MainEventService mainEventService,
         try
         {
             var p = await postcardService.RegisterPostcard(u, mainEventPublicId, PostcardId);
+
+            if (!string.IsNullOrWhiteSpace(MessageToSender))
+            {
+                // TODO Send message on email
+                logger.LogInformation($"Message from {u.UserName} to sender {p.Sender.UserName} for postcard {mainEventPublicId}-{PostcardId} (Receives copy of message: {ReceiverGetsCopyOfMessage}): {MessageToSender}");
+            }
             
             SetStatusMessage("Postcard registered successfully! You will get a postcard in return now.", StatusMessageType.Success);
             return RedirectToPage("/Postcard/Index", new { postcardId = p.FullPostCardId });

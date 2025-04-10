@@ -11,13 +11,13 @@ namespace cpcx.Pages.Event;
 
 [Authorize]
 public class Index(IEventService eventService,
+                   MainEventService mainEventService,
                    UserManager<CpcxUser> userManager,
                    IUserService userService) : MessagePageModel
 {
-    public IEnumerable<cpcx.Entities.Event> EventsAvailableToJoin { get; set; } = null!;
-    public IEnumerable<EventUser> EventsJoinedByUser { get; set; } = null!;
-
     [BindProperty] public InputModel Input { get; set; } = null!;
+    
+    public cpcx.Entities.Event CurrentEvent { get; set; } = null!;
 
     public class InputModel
     {
@@ -32,20 +32,27 @@ public class Index(IEventService eventService,
 
     }
     
-    public async Task<IActionResult> OnGet([FromQuery]string eventPublicId)
+    public async Task<IActionResult> OnGet(string eventPublicId)
     {
+        // While we have a single event
+        // TO-DO: Once this page is for joining events, remove this
+        if (string.IsNullOrEmpty(eventPublicId))
+        {
+            eventPublicId = await mainEventService.GetMainEventPublicId();
+            return RedirectToPage("/Event/Index", new { eventPublicId = eventPublicId });
+        }
         var us = (await userManager.GetUserAsync(User))!;
+        var evId = await mainEventService.GetMainEventId();
+        CurrentEvent = (await eventService.GetEvent(evId))!;
+        var eu = await userService.GetEventUser(evId, us.Id);
 
-        var availableEvents = await eventService.GetAvailableEvents();
-        var eventsUserIsIn = await eventService.GetEventsJoinedByUser(us.Id);
-
-        var eventsToJoin = availableEvents.Where(ev => !eventsUserIsIn.Select(ev2 => ev2.EventId).Contains(ev.Id)).ToList();
+        Input = new InputModel
+        {
+            AddressInEvent = eu.Address,
+            EventId = eventPublicId,
+            UserActiveInEvent = eu.ActiveInEvent,
+        };
         
-        EventsAvailableToJoin = eventsToJoin;
-        EventsJoinedByUser = eventsUserIsIn;
-        
-        
-
         return Page();
     }
 

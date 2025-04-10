@@ -11,24 +11,21 @@
 
         <h1 class="display-4">@ViewData["Title"]</h1>
 
-        @foreach (var ev in Model.EventsJoinedByUser!)
-        {
-            <div>
-                <form method="post">
-                    <h2>@ev.Event.Name</h2>
-                    <div>
-                        <textarea asp-for="Input!.AddressInEvent">@ev.Address</textarea>
-                        <label asp-for="Input.AddressInEvent" class="form-label"></label>
-                        <span asp-validation-for="Input.AddressInEvent" class="text-danger"></span>
-                    </div>
-                    <div>
-                        <input asp-for="Input.UserActiveInEvent" value="@ev.ActiveInEvent" />
-                        <label asp-for="Input.UserActiveInEvent" class="form-label"></label>
-                    </div>
-                    <input type="hidden" asp-for="Input.EventId" value="@ev.EventId"/>
-                    <button id="update-event-@ev.Event.PublicId-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-                </form>
-            </div>
-        }
+        <div>
+            <form method="post">
+                <h2>@Model.CurrentEvent.Name</h2>
+                <div>
+                    <textarea asp-for="Input!.AddressInEvent"></textarea>
+                    <label asp-for="Input.AddressInEvent" class="form-label"></label>
+                    <span asp-validation-for="Input.AddressInEvent" class="text-danger"></span>
+                </div>
+                <div>
+                    <input asp-for="Input.UserActiveInEvent" />
+                    <label asp-for="Input.UserActiveInEvent" class="form-label"></label>
+                </div>
+                <input type="hidden" asp-for="Input.EventId" />
+                <button id="update-event-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+            </form>
+        </div>
     </div>
 </div>

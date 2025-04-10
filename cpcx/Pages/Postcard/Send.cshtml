@@ -5,7 +5,7 @@
     ViewData["Title"] = "Send a Postcard";
 }
 
-<div class="text-center">
+<div>
     <h1 class="display-4">@ViewData["Title"]</h1>
 
     <partial name="_StatusMessage" model="Model.StatusMessage" />
@@ -28,11 +28,11 @@
             </li>
         </ul>
         <form method="post">
-            <div>
-                <input asp-for="@Model.NotesAcknowledged"> <label asp-for="@Model.NotesAcknowledged">I've read the notes above and want to receive an address to where I'll send a postcard.</label>
+            <div class="form-check mb-3">
+                <input asp-for="@Model.NotesAcknowledged" class="form-check-input"> <label asp-for="@Model.NotesAcknowledged" class="form-check-label">I've read the notes above and want to receive an address to where I'll send a postcard.</label>
             </div>
             <div>
-                <input type="submit" value="Request Address"/>
+                <input type="submit" class="btn btn-primary" value="Request Address"/>
             </div>
         </form>
     }

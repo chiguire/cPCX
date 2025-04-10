@@ -16,11 +16,11 @@
                 <label asp-for="Input.Username" class="form-label"></label>
             </div>
             <div class="form-floating mb-3">
-                <select asp-for="Input.Pronoun" asp-items="@Model.Pronouns"></select>
+                <select asp-for="Input.Pronoun" asp-items="@Model.Pronouns" class="form-select"></select>
                 <label asp-for="Input.Pronoun" class="form-label"></label>
             </div>
             <div class="form-floating mb-3">
-                <textarea asp-for="Input.ProfileDescription"></textarea>
+                <textarea asp-for="Input.ProfileDescription" class="form-control" style="height: 100px"></textarea>
                 <label asp-for="Input.ProfileDescription" class="form-label"></label>
                 <span asp-validation-for="Input.ProfileDescription" class="text-danger"></span>
             </div>
