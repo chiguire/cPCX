@@ -13,6 +13,8 @@ namespace cpcx.Services
         Task<Postcard> SendPostcard(CpcxUser u, Event e);
         Task<Postcard> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId);
         Task<Postcard> GetPostcard(string postcardId);
+        
+        Task<List<Postcard>> GetTravellingPostcards(Guid userId, Guid eventId);
     }
 
     public class PostcardService(
@@ -183,6 +185,38 @@ namespace cpcx.Services
             }
 
             return p;
+        }
+        
+        public async Task<List<Postcard>> GetTravellingPostcards(Guid userId, Guid eventId)
+        {
+            var eventUser = await context.EventUsers.FindAsync(eventId, userId);
+
+            if (eventUser == null)
+            {
+                logger.LogError("User {UserId} has not joined Event {EventId}", userId, eventId);
+                throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
+            }
+        
+            var currentDateTime = DateTime.UtcNow;
+            // Postcards sent before this time are considered expired
+            var postcardExpiredTime = currentDateTime.AddHours(-_postcardConfig.PostcardExpirationTimeInHours);
+
+            var travellingPostcards = await context.Postcards
+                .Include(p => p.Sender)
+                .Include(p => p.Receiver)
+                .Include(p => p.Event)
+                .Where(p =>
+                    // Postcards from this user
+                    p.Sender.Id == userId &&
+                    // Postcards from this event
+                    p.Event.Id == eventId &&
+                    // Postcard hasn't already expired
+                    p.SentOn >= postcardExpiredTime &&
+                    // Postcard hasn't been registered yet
+                    (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch)
+                ).ToListAsync();
+        
+            return travellingPostcards;
         }
     }
 }

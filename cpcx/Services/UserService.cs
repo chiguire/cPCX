@@ -9,7 +9,6 @@ namespace cpcx.Services;
 
 public interface IUserService
 {
-    Task<int> GetTravellingPostcards(Guid userId, Guid eventId);
     Task<string> GetUserAddress(Guid userId, Guid eventId);
     Task SetUserAddress(Guid userId, Guid eventId, string address);
     Task SetUserActiveInEvent(Guid userId, Guid eventId, bool value);
@@ -20,36 +19,6 @@ public interface IUserService
 
 public class UserService(ApplicationDbContext context, IOptionsSnapshot<PostcardConfig> postcardConfig, ILogger<UserService> logger) : IUserService
 {
-    private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
-    
-    public async Task<int> GetTravellingPostcards(Guid userId, Guid eventId)
-    {
-        var eventUser = await context.EventUsers.FindAsync(eventId, userId);
-
-        if (eventUser == null)
-        {
-            logger.LogError("User {UserId} has not joined Event {EventId}", userId, eventId);
-            throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
-        }
-        
-        var currentDateTime = DateTime.UtcNow;
-        // Postcards sent before this time are considered expired
-        var postcardExpiredTime = currentDateTime.AddHours(-_postcardConfig.PostcardExpirationTimeInHours);
-
-        var travellingPostcardCount = await context.Postcards.CountAsync(p =>
-            // Postcards from this user
-            p.Sender.Id == userId &&
-            // Postcards from this event
-            p.Event.Id == eventId &&
-            // Postcard hasn't already expired
-            p.SentOn >= postcardExpiredTime &&
-            // Postcard hasn't been registered yet
-            (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch)
-        );
-        
-        return travellingPostcardCount;
-    }
-
     public async Task<string> GetUserAddress(Guid userId, Guid eventId)
     {
         var eventUser = await context.EventUsers.FindAsync(eventId, userId);

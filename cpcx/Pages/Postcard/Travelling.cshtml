@@ -1,0 +1,23 @@
+@page
+@model cpcx.Pages.Postcard.Travelling
+
+@{
+    ViewData["Title"] = "Travelling Postcards";
+}
+
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+    <p>Travelling: @Model.TravellingPostcardsCount out of @Model.MaxTravellingPostcardsCount postcards</p>
+    
+    <p>If you need to see the address for a postcard again, click the corresponding Postcard ID listed below</p>
+    
+    <ul>
+        @foreach (var p in Model.Postcards)
+        {
+            <li><a asp-area="" asp-page="/Postcard/Index" asp-route-postcardId="@p.FullPostCardId">@p.FullPostCardId</a> - To: @p.Receiver.UserName</li>
+        }
+    </ul>
+</div>

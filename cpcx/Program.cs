@@ -34,7 +34,10 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AddPageRoute("/Postcard/Travelling", "/Postcard/Traveling");
+});
 
 var app = builder.Build();
 

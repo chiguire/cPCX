@@ -7,6 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - cPCX</title>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/cpcx.styles.css" asp-append-version="true" />
@@ -33,7 +34,7 @@
                                 <li><a class="dropdown-item" asp-area="" asp-page="/Postcard/Send">Send a Postcard</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-page="/Postcard/Register">Register a Postcard</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">Hi!</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Postcard/Travelling">Travelling Postcards</a></li>
                             </ul>
                         </li>
                         <li asp-authorize class="nav-item">
