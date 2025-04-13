@@ -14,7 +14,6 @@ namespace cpcx.Pages.Postcard;
 
 [Authorize]
 public class Send(MainEventService mainEventService,
-                  IUserService userService,
                   UserManager<CpcxUser> userManager,
                   IEventService eventService, 
                   IOptionsSnapshot<PostcardConfig> postcardConfig,

@@ -19,7 +19,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         var initialEvent = new Event
         {
             Id = Guid.NewGuid(),
-            Name = "EMF 2026",
+            Name = "Electromagnetic Field 2026",
+            ShortName = "EMF 2026",
+            URL = "https://www.emfcamp.org",
             PublicId = "E26",
             Venue = "Eastnor Castle Deer Park",
             Start = DateTime.UtcNow,

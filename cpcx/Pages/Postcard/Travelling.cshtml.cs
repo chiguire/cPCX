@@ -14,8 +14,8 @@ public class Travelling(UserManager<CpcxUser> userManager,
                         MainEventService mainEventService) : MessagePageModel
 {
     private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
-    
-    public List<cpcx.Entities.Postcard> Postcards { get; set; }
+
+    public List<cpcx.Entities.Postcard> Postcards { get; set; } = null!;
     
     public int TravellingPostcardsCount { get; set; }
     

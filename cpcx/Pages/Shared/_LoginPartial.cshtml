@@ -11,23 +11,23 @@
             Hello @User.Identity?.Name!
         </a>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item" asp-area="" asp-page="/User/Index" title="See @User.Identity?.Name! Profile" asp-route-alias="@UserManager.GetUserName(User)">See Profile</a></li>
-            <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage @User.Identity?.Name! Profile">Settings</a></li>
+            <li><a class="dropdown-item" asp-area="" asp-page="/User/Index" title="See @User.Identity?.Name! Profile" asp-route-alias="@UserManager.GetUserName(User)"><i class="bx bx-user-circle" ></i> See Profile</a></li>
+            <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage @User.Identity?.Name! Profile"><i class="bx bx-cog" ></i> Settings</a></li>
         </ul>
     </li>
     <li class="nav-item">
         <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            <button  type="submit" class="nav-link btn btn-link text-dark"><i class="bx bx-log-out-circle" ></i> Logout</button>
         </form>
     </li>
 }
 else
 {
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register"><i class="bx bx-user-plus" ></i> Register</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login"><i class="bx bx-log-in-circle" ></i> Login</a>
     </li>
 }
     <li class="nav-item py-2 py-lg-1 col-12 col-lg-auto">
@@ -42,7 +42,7 @@ else
             data-bs-toggle="dropdown"
             data-bs-display="static"
             aria-label="Toggle theme (auto)">
-        <span class="theme-icon-active"><i class="bx bx-brightness-half" ></i></span>
+        <span class="theme-icon-active"><i class="bx bxs-tone" ></i></span>
         <span class="d-lg-none ms-2" id="bd-theme-text">Toggle theme</span>
     </button>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text">
@@ -60,7 +60,7 @@ else
             </li>
             <li>
                 <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
-                    <i class="bx bx-brightness-half" ></i>
+                    <i class="bx bxs-tone" ></i>
                     Auto
                 </button>
             </li>

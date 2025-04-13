@@ -17,7 +17,7 @@ public interface IUserService
     Task<EventUser> GetEventUser(Guid eventId, Guid userId);
 }
 
-public class UserService(ApplicationDbContext context, IOptionsSnapshot<PostcardConfig> postcardConfig, ILogger<UserService> logger) : IUserService
+public class UserService(ApplicationDbContext context, ILogger<UserService> logger) : IUserService
 {
     public async Task<string> GetUserAddress(Guid userId, Guid eventId)
     {
