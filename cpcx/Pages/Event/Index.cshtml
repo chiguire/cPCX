@@ -1,31 +1,59 @@
 @page "{eventPublicId?}"
-@using Microsoft.IdentityModel.Tokens
+@using Microsoft.AspNetCore.Html
 @model cpcx.Pages.Event.Index
 
 @{
-    ViewData["Title"] = $"Events";
+    ViewData["Title"] = @Model.CurrentEvent.Name;
 }
 
-<div class="row">
-    <div class="col-md-6">
+@functions
+{   
+    private string FormatDate(DateTime d) 
+    {
+        return @d.ToShortDateString();
+    }
+}
 
-        <h1 class="display-4">@ViewData["Title"]</h1>
-
-        <div>
-            <form method="post">
-                <h2>@Model.CurrentEvent.Name</h2>
-                <div>
-                    <textarea asp-for="Input!.AddressInEvent"></textarea>
-                    <label asp-for="Input.AddressInEvent" class="form-label"></label>
-                    <span asp-validation-for="Input.AddressInEvent" class="text-danger"></span>
-                </div>
-                <div>
-                    <input asp-for="Input.UserActiveInEvent" />
-                    <label asp-for="Input.UserActiveInEvent" class="form-label"></label>
-                </div>
-                <input type="hidden" asp-for="Input.EventId" />
-                <button id="update-event-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-            </form>
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+    
+    <div class="container">
+        <div class="row align-items-start">
+            <div class="col">
+                <h2>About the Event</h2>
+                <dl>
+                    <dt>Name:</dt>
+                    <dd>@Model.CurrentEvent.Name (@Model.CurrentEvent.ShortName)</dd>
+                    <dt>URL:</dt>
+                    <dd><a href="@Model.CurrentEvent.URL" target="_blank" class="icon-link">@Model.CurrentEvent.URL <i class="bx bx-link-external"></i></a></dd>
+                    <dt>Place:</dt>
+                    <dd>@Model.CurrentEvent.Venue</dd>
+                    <dt>Dates:</dt>
+                    <dd>From @FormatDate(Model.CurrentEvent.Start) to @FormatDate(Model.CurrentEvent.End)</dd>
+                    <dt>Can you send postcards with cPCX for this event?</dt>
+                    <dd>@(Model.CurrentEvent.Open? "Yes (Event is open)": "No (Event is closed)") (Postcards can be only sent while the event is open)</dd>
+                </dl>
+            </div>
+            <div class="col">
+                <form method="post">
+                    <h2>Your information in the event</h2>
+                    <div class="form-floating mb-3">
+                        <textarea asp-for="Input!.AddressInEvent" class="form-control" style="height: 100px" aria-describedby="AddressInEvent-description"></textarea>
+                        <label asp-for="Input.AddressInEvent" class="form-label"></label>
+                        <span id="AddressInEvent-description" class="form-text text-muted">Be as specific as necessary when writing your address. Look out for <a href="https://wiki.emfcamp.org/2024/wiki/Sneakernet">experimental postcodes</a> if that helps.</span>
+                        <span asp-validation-for="Input.AddressInEvent" class="text-danger"></span>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="Input.UserActiveInEvent" class="form-check-input" aria-describedby="Input.UserActiveInEvent-description" />
+                        <label asp-for="Input.UserActiveInEvent" class="form-check-label"></label>
+                        <div id="UserActiveInEvent-description" class="form-text text-muted">Uncheck "Active in event" to mark yourself away (e.g. you're leaving early), you will not receive new postcards</div>
+                    </div>
+                    <input type="hidden" asp-for="Input.EventId" />
+                    <button id="update-event-button" type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
         </div>
     </div>
+    
+    
 </div>

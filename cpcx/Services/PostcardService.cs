@@ -14,7 +14,7 @@ namespace cpcx.Services
         Task<Postcard> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId);
         Task<Postcard> GetPostcard(string postcardId);
         
-        Task<List<Postcard>> GetTravellingPostcards(Guid userId, Guid eventId);
+        Task<List<Postcard>> GetTravellingPostcards(Guid userId, Guid eventId, bool includeExpired);
     }
 
     public class PostcardService(
@@ -187,7 +187,7 @@ namespace cpcx.Services
             return p;
         }
         
-        public async Task<List<Postcard>> GetTravellingPostcards(Guid userId, Guid eventId)
+        public async Task<List<Postcard>> GetTravellingPostcards(Guid userId, Guid eventId, bool includeExpired)
         {
             var eventUser = await context.EventUsers.FindAsync(eventId, userId);
 
@@ -210,8 +210,9 @@ namespace cpcx.Services
                     p.Sender.Id == userId &&
                     // Postcards from this event
                     p.Event.Id == eventId &&
-                    // Postcard hasn't already expired
-                    p.SentOn >= postcardExpiredTime &&
+                    // If Expired Postcards aren't included, check expiry
+                    // Duplicate p.IsExpired here because of EF limitations
+                    (includeExpired || p.SentOn > postcardExpiredTime) &&
                     // Postcard hasn't been registered yet
                     (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch)
                 ).ToListAsync();

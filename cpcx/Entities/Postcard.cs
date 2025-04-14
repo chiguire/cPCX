@@ -18,5 +18,7 @@ namespace cpcx.Entities
         public required string PostcardId { get; set; }
 
         public string FullPostCardId => $"{Event.PublicId}-{PostcardId}";
+
+        public bool IsExpired(DateTime postcardExpiredTime) => SentOn <= postcardExpiredTime;
     }
 }

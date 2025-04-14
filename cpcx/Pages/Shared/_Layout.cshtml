@@ -1,5 +1,4 @@
 ﻿@using cpcx.Entities
-@inject UserManager<CpcxUser> UserManager
 
 <!DOCTYPE html>
 <html lang="en">
@@ -25,24 +24,24 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index"><i class="bx bx-home-alt-2"></i> Home</a>
+                            <a class="nav-link text-dark icon-link" asp-area="" asp-page="/Index"><i class="bx bx-home-alt-2"></i> Home</a>
                         </li>
                         <li asp-authorize class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle icon-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bx bx-book-content" ></i> Postcards
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Postcard/Send"><i class="bx bx-export" ></i> Send a Postcard</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Postcard/Register"><i class="bx bx-import" ></i> Register a Postcard</a></li>
+                                <li><a class="dropdown-item icon-link" asp-area="" asp-page="/Postcard/Send"><i class="bx bx-export" ></i> Send a Postcard</a></li>
+                                <li><a class="dropdown-item icon-link" asp-area="" asp-page="/Postcard/Register"><i class="bx bx-import" ></i> Register a Postcard</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Postcard/Travelling"><i class="bx bxs-plane-alt" ></i> Travelling Postcards</a></li>
+                                <li><a class="dropdown-item icon-link" asp-area="" asp-page="/Postcard/Travelling"><i class="bx bxs-plane-alt" ></i> Travelling Postcards</a></li>
                             </ul>
                         </li>
                         <li asp-authorize class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Event/Index" asp-route-eventPublicId="EMF26"><i class="bx bx-map-pin"></i> EMF</a>
+                            <a class="nav-link text-dark icon-link" asp-area="" asp-page="/Event/Index" asp-route-eventPublicId="EMF26"><i class="bx bx-map-pin"></i> EMF</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Guidelines"><i class="bx bx-group" ></i> Community Guidelines</a>
+                            <a class="nav-link text-dark icon-link" asp-area="" asp-page="/Guidelines"><i class="bx bx-group" ></i> Community Guidelines</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />

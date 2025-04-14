@@ -23,10 +23,10 @@ public class Index(IEventService eventService,
     {
         public string EventId { get; set; } = "";
         
-        [Display(Name = "Active in event", Description = "Uncheck this box to set yourself away from the event, you will not get postcards")]
+        [Display(Name = "Active in event", Description = "Uncheck this box to mark yourself away from the event (e.g. you're leaving early), you will not receive new postcards")]
         public bool UserActiveInEvent { get; set; }
 
-        [Display(Name = "Address in event")]
+        [Display(Name = "Address in event", Description = "Be as specific as necessary. Look out for experimental postcodes if that helps")]
         [Required(ErrorMessage = "Address is required. Set yourself to inactive until you have an address")]
         public string AddressInEvent { get; set; } = "";
 

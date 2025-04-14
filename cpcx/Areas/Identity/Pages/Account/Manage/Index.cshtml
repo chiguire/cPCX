@@ -24,6 +24,12 @@
                 <label asp-for="Input.ProfileDescription" class="form-label"></label>
                 <span asp-validation-for="Input.ProfileDescription" class="text-danger"></span>
             </div>
+            <div class="position-relative mb-3">
+                &nbsp;
+                <div id="ProfileLengthDisplay" class="position-absolute top-0 end-0">
+                    0/5000
+                </div>
+            </div>
             <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </form>
     </div>
@@ -31,4 +37,17 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script language="JavaScript">
+        function updateLength() {
+            const m = $("#Input_ProfileDescription");
+            $("#ProfileLengthDisplay").text(m.val().length + "/" + m[0].maxLength);
+        }
+        $().ready(function() {
+            updateLength();
+        });
+        $("#Input_ProfileDescription").on("input", function() {
+            updateLength();
+        });
+    </script>
 }

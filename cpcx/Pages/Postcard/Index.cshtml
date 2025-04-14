@@ -4,18 +4,34 @@
 
 @{
     ViewData["Title"] = $"Postcard {Model.PostcardId}";
+    
+    ViewData["Pronouns"] = (Model.Postcard.Receiver.Pronouns != Pronoun.Empty ? $" ({Model.Postcard.Receiver.Pronouns.GetDescription()})" : "");
 }
 
-<div class="text-center">
+<div>
     <h1 class="display-4">@ViewData["Title"]</h1>
 
     <partial name="_StatusMessage" model="Model.StatusMessage" />
 
     @if (Model.IsTravellingPostcard)
     {
-        <p>Postcard @Model.Postcard.FullPostCardId will go to...</p>
-        <p>@Model.Postcard.Receiver.UserName (@Model.Postcard.Receiver.Pronouns.GetDescription())</p>
-        <p>Address: @Model.PostcardAddress</p>
+        <div class="container">
+            <div class="row align-content-start">
+                <div class="col">
+                    <h3>Postcard ID:</h3>
+                    <p>@Model.PostcardId</p>
+                    <p>Don't forget to write it on your postcard!</p>
+                </div>
+                <div class="col">
+                    <h3><a asp-area="" asp-page="/User/Index" asp-route-alias="@Model.Postcard.Receiver.UserName">@Model.Postcard.Receiver.UserName</a>@ViewData["Pronouns"]</h3>
+                    <p>You should mail it to: @Model.PostcardAddress</p>
+                    <p>Sent on: @Model.Postcard.SentOn</p>
+                </div>
+            </div>
+        </div>
+        
+        <h3>A bit about @Model.Postcard.Receiver.UserName</h3>
+        <p>@Model.Postcard.Receiver.ProfileDescription</p>
     }
     else
     {

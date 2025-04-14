@@ -21,14 +21,18 @@ public class Travelling(UserManager<CpcxUser> userManager,
     
     public int MaxTravellingPostcardsCount { get; set; }
     
+    public DateTime PostcardExpiredTime { get; set; }
+    
     public async Task<ActionResult> OnGet()
     {
         var us = await userManager.GetUserAsync(User);
         var evId = await mainEventService.GetMainEventId();
-        var postcards = await postcardService.GetTravellingPostcards(us!.Id, evId);
+        var postcards = await postcardService.GetTravellingPostcards(us!.Id, evId, includeExpired: true);
+        var currentDateTime = DateTime.UtcNow;
+        PostcardExpiredTime = currentDateTime.AddHours(-_postcardConfig.PostcardExpirationTimeInHours);
 
         Postcards = postcards;
-        TravellingPostcardsCount = Postcards.Count;
+        TravellingPostcardsCount = Postcards.Count(p => !p.IsExpired(PostcardExpiredTime));
         MaxTravellingPostcardsCount = _postcardConfig.MaxTravellingPostcards;
 
         return Page();

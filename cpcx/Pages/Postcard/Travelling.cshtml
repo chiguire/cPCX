@@ -1,4 +1,5 @@
 @page
+@using System.Globalization
 @model cpcx.Pages.Postcard.Travelling
 
 @{
@@ -14,10 +15,26 @@
     
     <p>If you need to see the address for a postcard again, click the corresponding Postcard ID listed below</p>
     
-    <ul>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Postcard ID</th>
+            <th scope="col">Receiver</th>
+            <th scope="col">Sent</th>
+            <th scope="col">Expired</th>
+        </tr>
+        </thead>
+        <tbody>
         @foreach (var p in Model.Postcards)
         {
-            <li><a asp-area="" asp-page="/Postcard/Index" asp-route-postcardId="@p.FullPostCardId">@p.FullPostCardId</a> - To: @p.Receiver.UserName</li>
+            <tr>
+                <td><a asp-area="" asp-page="/Postcard/Index" asp-route-postcardId="@p.FullPostCardId">@p.FullPostCardId</a></td>
+                <td><a asp-area="" asp-page="/User/Index" asp-route-alias="@p.Receiver.UserName">@p.Receiver.UserName</a></td>
+                <td>@p.SentOn.ToString(CultureInfo.CurrentCulture)</td>
+                <td><i>@(@p.IsExpired(Model.PostcardExpiredTime)? "(expired)": "-")</i> </td>
+            </tr>
         }
-    </ul>
+        
+        </tbody>
+    </table>
 </div>

@@ -8,18 +8,21 @@
     ViewData["Pronouns"] = (Model.UserProfile.Pronouns != Pronoun.Empty ? $" ({Model.UserProfile.Pronouns.GetDescription()})" : "");
 }
 
-<div class="text-center">
+<div>
     <h1 class="display-4">@ViewData["Title"]</h1>
 
     <partial name="_StatusMessage" model="Model.StatusMessage" />
 
     <h2>About @Model.UserProfile.UserName@ViewData["Pronouns"]</h2>
     
-    <p><b>Postcards Sent:</b> @Model.ProfileStats.PostcardsSent</p>
-    <p><b>Postcards Received:</b> @Model.ProfileStats.PostcardsReceived</p>
-    
-    <p><b>Profile Description:</b></p>
-    <p>@Model.UserProfile.ProfileDescription</p>
+    <dl>
+        <dt>Postcards Sent:</dt>
+        <dd>@Model.ProfileStats.PostcardsSent</dd>
+        <dt>Postcards Received:</dt>
+        <dd>@Model.ProfileStats.PostcardsReceived</dd>
+        <dt>Profile Description:</dt>
+        <dd>@Model.UserProfile.ProfileDescription</dd>
+    </dl>
     
     @if (!Model.OwnProfile)
     {

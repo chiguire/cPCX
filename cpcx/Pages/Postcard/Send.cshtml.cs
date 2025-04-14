@@ -34,7 +34,7 @@ public class Send(MainEventService mainEventService,
         var eventId = await mainEventService.GetMainEventId();
         var @event = await eventService.GetEvent(eventId);
         
-        TravellingPostcards = (await postcardService.GetTravellingPostcards(us!.Id, @event!.Id)).Count;
+        TravellingPostcards = (await postcardService.GetTravellingPostcards(us!.Id, @event!.Id, includeExpired: false)).Count;
         MaxTravellingPostcards = _postcardConfig.MaxTravellingPostcards;
         CanUserSendPostcards = TravellingPostcards < MaxTravellingPostcards;
         
