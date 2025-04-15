@@ -18,9 +18,13 @@
         <div class="container">
             <div class="row align-content-start">
                 <div class="col">
-                    <h3>Postcard ID:</h3>
-                    <p>@Model.PostcardId</p>
-                    <p>Don't forget to write it on your postcard!</p>
+                    <div class="card text-bg-info mb-3" style="max-width: 18rem;">
+                        <div class="card-header"><h3>Postcard ID:</h3></div>
+                        <div class="card-body">
+                            <h2 class="text-xxl-center">@Model.PostcardId</h2>
+                            <p class="card-text">Don't forget to write it on your postcard!</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="col">
                     <h3><a asp-area="" asp-page="/User/Index" asp-route-alias="@Model.Postcard.Receiver.UserName">@Model.Postcard.Receiver.UserName</a>@ViewData["Pronouns"]</h3>
