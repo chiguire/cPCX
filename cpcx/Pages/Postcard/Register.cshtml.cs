@@ -68,7 +68,7 @@ public class Register(MainEventService mainEventService,
                 logger.LogInformation($"Message from {u.UserName} to sender {p.Sender.UserName} for postcard {mainEventPublicId}-{PostcardId} (Receives copy of message: {ReceiverGetsCopyOfMessage}): {MessageToSender}");
             }
             
-            SetStatusMessage("Postcard registered successfully! You will get a postcard in return now.", StatusMessageType.Success);
+            SetStatusMessage("Thanks for registering this postcard!", StatusMessageType.Success);
             return RedirectToPage("/Postcard/Index", new { postcardId = p.FullPostCardId });
         }
         catch (CPCXException e)

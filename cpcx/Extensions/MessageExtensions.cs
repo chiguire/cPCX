@@ -2,6 +2,7 @@ using cpcx.Models;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.CodeAnalysis;
 
 namespace cpcx.Extensions;
 
@@ -39,7 +40,8 @@ public static class MessageExtensions
         //First, build the innermost div tag, the one that displays the message
         TagBuilder display = new TagBuilder("div");
         display.AddCssClass("rounded p-lg-3");
-        display.AddCssClass(messageCss);
+        display.AddCssClass("alert " + messageCss);
+        display.Attributes.Add("role", "alert");
         display.InnerHtml.Append(message);
 
         //Now, build the wrapping column

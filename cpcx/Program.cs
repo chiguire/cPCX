@@ -17,6 +17,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IPostcardService, PostcardService>();
 builder.Services.AddSingleton<MainEventService>();
+builder.Services.AddSingleton<IAvatarService, AvatarService>();
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
