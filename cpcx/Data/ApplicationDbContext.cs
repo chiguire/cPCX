@@ -149,5 +149,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             context.Set<EventUser>().AddRange(initialEventUserList);
         }
+        await context.SaveChangesAsync(token);
     }
 }
