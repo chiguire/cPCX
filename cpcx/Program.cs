@@ -11,8 +11,8 @@ builder.Services.Configure<CpcxConfig>(
     builder.Configuration.GetSection(CpcxConfig.Cpcx));
 builder.Services.Configure<PostcardConfig>(
      builder.Configuration.GetSection(PostcardConfig.Postcard));
-
-builder.Services.AddAutoMapper(typeof(Program));
+var license = builder.Configuration["AutoMapper:License"];
+builder.Services.AddAutoMapper(cfg => cfg.LicenseKey = license, typeof(Program));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IPostcardService, PostcardService>();
