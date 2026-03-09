@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using cpcx.Data;
 using cpcx.Entities;
 using cpcx.Config;
+using cpcx.Middleware;
 using cpcx.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,8 @@ builder.Services.Configure<CpcxConfig>(
     builder.Configuration.GetSection(CpcxConfig.Cpcx));
 builder.Services.Configure<PostcardConfig>(
      builder.Configuration.GetSection(PostcardConfig.Postcard));
+builder.Services.Configure<IpAllowlistConfig>(
+    builder.Configuration.GetSection(IpAllowlistConfig.IpAllowlist));
 var license = builder.Configuration["AutoMapper:License"];
 builder.Services.AddAutoMapper(cfg => cfg.LicenseKey = license, typeof(Program));
 builder.Services.AddScoped<IUserService, UserService>();
@@ -56,6 +59,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseMiddleware<IpAllowlistMiddleware>();
 
 app.UseRouting();
 
