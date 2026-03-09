@@ -20,7 +20,7 @@ record PostcardStatsResponse(
 class Program
 {
     // --- Configuration ---
-    const string BaseUrl = "https://localhost:7130";
+    const string BaseUrl = "https://localhost:44348";
 
     static readonly UserCredentials[] Users =
         Enumerable.Range(1, 200).Select(i => new UserCredentials($"user{i:D3}", "devpassword")).ToArray();
@@ -44,11 +44,14 @@ class Program
 
                 var session = (UserSession)context.Data["session"];
 
-                // If there's a postcard waiting to be registered, register it; otherwise send one
-                if (IncomingPostcards.TryGetValue(session.Username, out var queue)
-                    && queue.TryDequeue(out var postcardNum))
+                // Drain the entire incoming queue before sending
+                if (IncomingPostcards.TryGetValue(session.Username, out var queue))
                 {
-                    return await RegisterPostcard(session, postcardNum, context.Logger);
+                    while (queue.TryDequeue(out var postcardNum))
+                    {
+                        var result = await RegisterPostcard(session, postcardNum, context.Logger);
+                        if (result.IsError) return result;
+                    }
                 }
 
                 return await SendPostcard(session, context.Logger);

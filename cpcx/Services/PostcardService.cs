@@ -25,8 +25,29 @@ namespace cpcx.Services
     {
         private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
 
+        // Serializes SendPostcard across all concurrent requests so the postcard ID
+        // counter read-modify-write and recipient selection are a single atomic unit.
+        private static readonly SemaphoreSlim _sendLock = new(1, 1);
+
         public async Task<Postcard> SendPostcard(CpcxUser u, Event e)
         {
+            await _sendLock.WaitAsync();
+            try
+            {
+                return await SendPostcardCore(u, e);
+            }
+            finally
+            {
+                _sendLock.Release();
+            }
+        }
+
+        private async Task<Postcard> SendPostcardCore(CpcxUser u, Event e)
+        {
+            // Reload the event so we see the latest LastPostcardId committed by
+            // a previous request that just released the lock.
+            await context.Entry(e).ReloadAsync();
+
             var eu = await context.EventUsers.FindAsync(e.Id, u.Id);
 
             if (eu == null)

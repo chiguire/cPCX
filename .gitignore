@@ -488,3 +488,7 @@ $RECYCLE.BIN/
 
 # Database migrations are specific to an instance
 cpcx/Migrations/
+
+# Load test output
+reports/
+stats_*.txt
