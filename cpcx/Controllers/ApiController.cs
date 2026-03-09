@@ -14,6 +14,7 @@ public class ApiController(
     UserManager<CpcxUser> userManager,
     IPostcardService postcardService,
     IEventService eventService,
+    IUserService userService,
     MainEventService mainEventService,
     ILogger<ApiController> logger) : ControllerBase
 {
@@ -69,6 +70,30 @@ public class ApiController(
         {
             logger.LogWarning("API send postcard failed for user {Username}: {Error}", user.UserName, e.ErrorCode);
             return BadRequest(new { success = false, error = CPCXException.ErrorCodeMessage(e.ErrorCode) });
+        }
+    }
+
+    /// <summary>
+    /// Returns the number of postcards sent and received by the authenticated user in the active event.
+    /// </summary>
+    [Authorize]
+    [HttpGet("postcard/stats")]
+    public async Task<IActionResult> GetPostcardStats()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var eventId = await mainEventService.GetMainEventId();
+
+        try
+        {
+            var eu = await userService.GetEventUser(eventId, user.Id);
+            return Ok(new { postcardsSent = eu.PostcardsSent, postcardsReceived = eu.PostcardsReceived });
+        }
+        catch (CPCXException e)
+        {
+            logger.LogWarning("API postcard stats failed for user {Username}: {Error}", user.UserName, e.ErrorCode);
+            return BadRequest(new { error = CPCXException.ErrorCodeMessage(e.ErrorCode) });
         }
     }
 
