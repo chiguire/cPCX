@@ -8,24 +8,51 @@
     ViewData["Pronouns"] = (Model.UserProfile.Pronouns != Pronoun.Empty ? $" ({Model.UserProfile.Pronouns.GetDescription()})" : "");
 }
 
-<div>
-    <h1 class="display-4">@ViewData["Title"]</h1>
+<div class="col-lg-7">
+
+    <h1 class="display-4">@Model.UserProfile.UserName@ViewData["Pronouns"]</h1>
 
     <partial name="_StatusMessage" model="Model.StatusMessage" />
 
-    <h2>About @Model.UserProfile.UserName@ViewData["Pronouns"]</h2>
-    
-    <dl>
-        <dt><i class="bx bx-export text-danger"></i> Postcards Sent:</dt>
-        <dd>@Model.ProfileStats.PostcardsSent</dd>
-        <dt><i class="bx bx-import text-danger"></i> Postcards Received:</dt>
-        <dd>@Model.ProfileStats.PostcardsReceived</dd>
-        <dt>Profile Description:</dt>
-        <dd>@Model.UserProfile.ProfileDescription</dd>
-    </dl>
-    
-    @if (!Model.OwnProfile)
+    <div class="d-flex gap-3 mb-3">
+        @if (!string.IsNullOrEmpty(Model.UserProfile.AvatarPath))
+        {
+            <div class="card flex-shrink-0">
+                <div class="card-body d-flex align-items-center justify-content-center p-3">
+                    <img src="/zooka/avatars/@Uri.EscapeDataString(Model.UserProfile.AvatarPath)"
+                         class="avatar-profile"
+                         alt="@Model.UserProfile.UserName's avatar" />
+                </div>
+            </div>
+        }
+        <div class="card flex-grow-1">
+            <div class="card-body row text-center g-0 align-items-center">
+                <div class="col-6 border-end">
+                    <div class="text-muted small">Postcards Sent</div>
+                    <div class="fs-1 fw-bold"><i class="bx bx-export text-danger"></i> @Model.ProfileStats.PostcardsSent</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Postcards Received</div>
+                    <div class="fs-1 fw-bold"><i class="bx bx-import text-danger"></i> @Model.ProfileStats.PostcardsReceived</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">About @Model.UserProfile.UserName...</h5>
+            <p class="card-text">@Model.UserProfile.ProfileDescription</p>
+        </div>
+    </div>
+
+    @if (Model.OwnProfile)
+    {
+        <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-outline-secondary">Edit profile</a>
+    }
+    else
     {
         <p>Report Profile</p>
     }
+
 </div>

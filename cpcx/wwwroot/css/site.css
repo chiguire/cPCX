@@ -21,8 +21,15 @@ body {
   margin-bottom: 60px;
 }
 
-[data-bs-theme="dark"] .avatar-option img {
+[data-bs-theme="dark"] .avatar-option img,
+[data-bs-theme="dark"] .avatar-profile {
     filter: invert(1);
+}
+
+.avatar-profile {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
 }
 
 .avatar-option {
