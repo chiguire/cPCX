@@ -101,23 +101,22 @@ namespace cpcx.Services
 
             var blockedUserIds = u.BlockedUsers?.Select(u => u.Id).ToList() ?? [];
 
-            var address = await context.EventUsers
+            return await context.EventUsers
                 .Include(eu => eu.User)
-                .FirstOrDefaultAsync(
-                eu =>
+                .Where(eu =>
                     // Postcards from THIS event
                     eu.EventId == eventId &&
-                    // Recipient is part of THIS event
+                    // Recipient is active in THIS event
                     eu.ActiveInEvent &&
                     // Sender can't send a postcard to themselves
                     eu.UserId != u.Id &&
-                    // Recipient has this user blocked
+                    // Recipient has not blocked the sender
                     !blockedUserIds.Contains(u.Id) &&
-                    // Recipient can still receive postcards if they have sent a couple more postcards than they have received
+                    // Recipient can still receive postcards
                     eu.PostcardsSent - eu.PostcardsReceived < _postcardConfig.MaxDifferenceBetweenSentAndReceived
-                    );
-            
-            return address;
+                )
+                .OrderBy(eu => EF.Functions.Random())
+                .FirstOrDefaultAsync();
         }
 
         public async Task<Postcard> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId)
