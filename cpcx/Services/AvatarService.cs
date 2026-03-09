@@ -1,11 +1,16 @@
 using cpcx.Config;
+using cpcx.Entities;
 using Microsoft.Extensions.Options;
 
 namespace cpcx.Services;
 
 public interface IAvatarService
 {
-    string GetAvatarFullPath(string avatarPath);
+    public List<string> GetAvatarListForUser(CpcxUser user);
+    
+    public string GetCurrentAvatarFullPathForUser(CpcxUser user);
+
+    //public void UploadAvatarForUser(CpcxUser user, BinaryReader br); // TODO: when we allow users to upload their avatars
 }
 
 public class AvatarService(IOptions<CpcxConfig> cpcxConfig) : IAvatarService
@@ -14,14 +19,14 @@ public class AvatarService(IOptions<CpcxConfig> cpcxConfig) : IAvatarService
         
     private List<string>? _avatarList = null;
 
-    public List<string> GetAvatarList()
+    public List<string> GetAvatarListForUser(CpcxUser _)
     {
         return _GetAvatarList();
     }
 
-    public string GetAvatarFullPath(string avatarPath)
+    public string GetCurrentAvatarFullPathForUser(CpcxUser user)
     {
-        return _cpcxConfig.AvatarPath + "/" + avatarPath;
+        return _cpcxConfig.AvatarPath + "/" + user.AvatarPath;
     }
 
     private List<string> _GetAvatarList()

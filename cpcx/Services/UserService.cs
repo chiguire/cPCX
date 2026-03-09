@@ -14,6 +14,7 @@ public interface IUserService
     Task SetUserActiveInEvent(Guid userId, Guid eventId, bool value);
     Task SetUserPronoun(CpcxUser user, Pronoun pronoun);
     Task SetUserProfileDescription(CpcxUser user, string profileDescription);
+    Task SetUserAvatar(CpcxUser user, string avatarPath);
     Task<EventUser> GetEventUser(Guid eventId, Guid userId);
 }
 
@@ -62,6 +63,13 @@ public class UserService(ApplicationDbContext context, ILogger<UserService> logg
     public async Task SetUserProfileDescription(CpcxUser user, string profileDescription)
     {
         user.ProfileDescription = profileDescription;
+        context.Users.Update(user);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task SetUserAvatar(CpcxUser user, string avatarPath)
+    {
+        user.AvatarPath = avatarPath;
         context.Users.Update(user);
         await context.SaveChangesAsync();
     }

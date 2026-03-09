@@ -1,0 +1,44 @@
+@page
+@model AvatarModel
+@{
+    ViewData["Title"] = "Avatar";
+    ViewData["ActivePage"] = ManageNavPages.Avatar;
+}
+
+<h3>@ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="@Model.StatusMessage" />
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="avatar-form" method="post">
+    <input type="hidden" id="SelectedAvatar" name="SelectedAvatar" value="@Model.CurrentAvatar" />
+    <div class="row row-cols-3 row-cols-md-6 g-3 mb-3">
+        @foreach (var avatar in Model.Avatars)
+        {
+            var isSelected = avatar == Model.CurrentAvatar;
+            <div class="col">
+                <div class="avatar-option @(isSelected ? "avatar-selected" : "")"
+                     data-avatar="@avatar"
+                     role="button"
+                     title="@System.IO.Path.GetFileNameWithoutExtension(avatar)">
+                    <img src="/zooka/avatars/@Uri.EscapeDataString(avatar)"
+                         class="img-fluid rounded"
+                         alt="@System.IO.Path.GetFileNameWithoutExtension(avatar)" />
+                </div>
+            </div>
+        }
+    </div>
+    <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+</form>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.avatar-option').forEach(function (el) {
+            el.addEventListener('click', function () {
+                document.querySelectorAll('.avatar-option').forEach(function (e) {
+                    e.classList.remove('avatar-selected');
+                });
+                this.classList.add('avatar-selected');
+                document.getElementById('SelectedAvatar').value = this.dataset.avatar;
+            });
+        });
+    </script>
+}
