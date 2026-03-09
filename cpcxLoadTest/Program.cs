@@ -23,11 +23,7 @@ class Program
     const string BaseUrl = "https://localhost:7130";
 
     static readonly UserCredentials[] Users =
-    [
-        new("aaa", "devpassword"),
-        new("bbb", "devpassword"),
-        new("ccc", "devpassword"),
-    ];
+        Enumerable.Range(1, 200).Select(i => new UserCredentials($"user{i:D3}", "devpassword")).ToArray();
 
     // Shared queue: username -> numeric postcard IDs waiting to be registered
     static readonly ConcurrentDictionary<string, ConcurrentQueue<string>> IncomingPostcards = new();
