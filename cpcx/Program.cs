@@ -37,7 +37,9 @@ builder.Services
         options.User.RequireUniqueEmail = false;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddControllers();
+var enableApi = builder.Configuration.GetValue<bool>($"{CpcxConfig.Cpcx}:EnableApi");
+if (enableApi)
+    builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages(options =>
 {
@@ -67,6 +69,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
-app.MapControllers();
+if (enableApi)
+    app.MapControllers();
 
 app.Run();

@@ -2,10 +2,11 @@ using cpcx.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace cpcx.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration configuration)
     : IdentityDbContext<CpcxUser, IdentityRole<Guid>, Guid>(options)
 {
     protected override void OnModelCreating(ModelBuilder builder)
@@ -48,7 +49,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         var hasher = new PasswordHasher<CpcxUser>();
         var devpassword = hasher.HashPassword(null!, "devpassword");
-        var eventStart = new DateTime(year: 2026, month: 2, day: 11, hour: 23, minute: 45, second: 0, kind: DateTimeKind.Utc);
+        var eventStart = new DateTime(year: 2026, month: 7, day: 15, hour: 0, minute: 45, second: 0, kind: DateTimeKind.Utc);
 
         var initialEvent = new Event
         {
@@ -59,7 +60,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             PublicId = "E26",
             Venue = "Eastnor Castle Deer Park",
             Start = eventStart,
-            End = eventStart.AddDays(7),
+            End = eventStart.AddDays(5),
             Open = true,
             Visible = true,
         };
@@ -91,13 +92,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         if (ev == null)
             context.Set<Event>().Add(initialEvent);
 
-        var existingUser = context.Set<CpcxUser>().FirstOrDefault(u => u.Id == userList[0].Id);
-        if (existingUser == null)
-            context.Set<CpcxUser>().AddRange(userList);
+        if (configuration.GetValue<bool>("Cpcx:EnableSeed"))
+        {
+            var existingUser = context.Set<CpcxUser>().FirstOrDefault(u => u.Id == userList[0].Id);
+            if (existingUser == null)
+                context.Set<CpcxUser>().AddRange(userList);
 
-        var existingEventUser = context.Set<EventUser>().FirstOrDefault(u => u.EventId == initialEvent.Id);
-        if (existingEventUser == null)
-            context.Set<EventUser>().AddRange(eventUserList);
+            var existingEventUser = context.Set<EventUser>().FirstOrDefault(u => u.EventId == initialEvent.Id);
+            if (existingEventUser == null)
+                context.Set<EventUser>().AddRange(eventUserList);
+        }
 
         await context.SaveChangesAsync(token);
     }
