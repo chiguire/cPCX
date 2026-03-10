@@ -78,6 +78,9 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.NoAddressesFoundInEvent);
             }
 
+            if (chosenAddress.PriorityScore > 0)
+                chosenAddress.PriorityScore--;
+
             var postcardId = await eventService.GetNextEventPostcardId(e.Id);
             
             logger.LogInformation("User {Sender} will send a postcard to {Receiver} at {Address}, PCID {EPID}-{PCID}", u.UserName, chosenAddress.User.UserName, chosenAddress.Address, e.PublicId, postcardId);
@@ -125,11 +128,10 @@ namespace cpcx.Services
                     // Sender can't send a postcard to themselves
                     eu.UserId != u.Id &&
                     // Recipient has not blocked the sender
-                    !blockedUserIds.Contains(u.Id) &&
-                    // Recipient can still receive postcards
-                    eu.PostcardsSent - eu.PostcardsReceived < _postcardConfig.MaxDifferenceBetweenSentAndReceived
+                    !blockedUserIds.Contains(u.Id)
                 )
-                .OrderBy(eu => EF.Functions.Random())
+                .OrderByDescending(eu => eu.PriorityScore)
+                .ThenBy(eu => EF.Functions.Random())
                 .FirstOrDefaultAsync();
         }
 
@@ -180,6 +182,7 @@ namespace cpcx.Services
             
             postcardToRegister.ReceivedOn = DateTime.UtcNow;
             senderEu.PostcardsSent += 1;
+            senderEu.PriorityScore++;
             receiverEu.PostcardsReceived += 1;
             
             context.EventUsers.Update(senderEu);

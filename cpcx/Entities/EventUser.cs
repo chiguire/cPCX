@@ -13,5 +13,6 @@ namespace cpcx.Entities
         public bool ActiveInEvent { get; set; } = true;
         public int PostcardsSent { get; set; } = 0;
         public int PostcardsReceived { get; set; } = 0;
+        public int PriorityScore { get; set; } = 0;
     }
 }
