@@ -13,9 +13,13 @@ record SendPostcardResponse(
     [property: JsonPropertyName("postcardId")] string PostcardId,
     [property: JsonPropertyName("receiverUsername")] string ReceiverUsername);
 
+record SendPostcardErrorResponse(
+    [property: JsonPropertyName("error")] string Error);
+
 record PostcardStatsResponse(
     [property: JsonPropertyName("postcardsSent")] int PostcardsSent,
-    [property: JsonPropertyName("postcardsReceived")] int PostcardsReceived);
+    [property: JsonPropertyName("postcardsReceived")] int PostcardsReceived,
+    [property: JsonPropertyName("postcardsTravelling")] int PostcardsTravelling);
 
 class Program
 {
@@ -77,7 +81,7 @@ class Program
                     if (response.IsSuccessStatusCode)
                     {
                         var stats = await response.Content.ReadFromJsonAsync<PostcardStatsResponse>();
-                        lines.Add($"{session.Username}: sent={stats!.PostcardsSent}, received={stats.PostcardsReceived}");
+                        lines.Add($"{session.Username}: sent={stats!.PostcardsSent}, received={stats.PostcardsReceived}, travelling={stats.PostcardsTravelling}");
                     }
                     else
                     {
@@ -126,7 +130,14 @@ class Program
 
         if (!response.IsSuccessStatusCode)
         {
-            var body = await response.Content.ReadAsStringAsync();
+            var error = await response.Content.ReadFromJsonAsync<SendPostcardErrorResponse>();
+            if (error?.Error == "Traveling Postcard Limit Reached")
+            {
+                logger.Information("{User} hit travelling postcard limit, waiting 1s", session.Username);
+                await Task.Delay(1000);
+                return Response.Ok();
+            }
+            var body = error?.Error ?? await response.Content.ReadAsStringAsync();
             logger.Warning("Send failed for {User}: {Status} {Body}", session.Username, response.StatusCode, body);
             return Response.Fail(message: $"send failed: {response.StatusCode}");
         }

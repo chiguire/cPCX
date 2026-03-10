@@ -28,7 +28,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             p.HasKey(p => p.Id);
             p.Property(p => p.SentOn)
-                .HasDefaultValueSql("datetime()");
+                .HasDefaultValueSql("NOW()");
         });
     }
 
@@ -48,7 +48,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         var hasher = new PasswordHasher<CpcxUser>();
         var devpassword = hasher.HashPassword(null!, "devpassword");
-        var eventStart = new DateTime(year: 2026, month: 2, day: 11, hour: 23, minute: 45, second: 0);
+        var eventStart = new DateTime(year: 2026, month: 2, day: 11, hour: 23, minute: 45, second: 0, kind: DateTimeKind.Utc);
 
         var initialEvent = new Event
         {

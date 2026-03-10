@@ -55,7 +55,21 @@ namespace cpcx.Services
                 logger.LogError("User {UserId} is not part of event {Event}", u.Id, e.Id);
                 throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
             }
-            
+
+            var postcardExpiredTime = DateTime.UtcNow.AddHours(-_postcardConfig.PostcardExpirationTimeInHours);
+            var travellingCount = await context.Postcards.CountAsync(p =>
+                p.Sender.Id == u.Id &&
+                p.Event.Id == e.Id &&
+                p.SentOn > postcardExpiredTime &&
+                (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch)
+            );
+
+            if (travellingCount >= _postcardConfig.MaxTravellingPostcards)
+            {
+                logger.LogInformation("User {UserId} has reached the travelling postcard limit ({Limit})", u.Id, _postcardConfig.MaxTravellingPostcards);
+                throw new CPCXException(CPCXErrorCode.TravelingPostcardLimitReached);
+            }
+
             var chosenAddress = await GetAvailableAddress(u, e.Id);
 
             if (chosenAddress == null)

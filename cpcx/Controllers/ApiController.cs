@@ -88,7 +88,8 @@ public class ApiController(
         try
         {
             var eu = await userService.GetEventUser(eventId, user.Id);
-            return Ok(new { postcardsSent = eu.PostcardsSent, postcardsReceived = eu.PostcardsReceived });
+            var travelling = await postcardService.GetTravellingPostcards(user.Id, eventId, includeExpired: false);
+            return Ok(new { postcardsSent = eu.PostcardsSent, postcardsReceived = eu.PostcardsReceived, postcardsTravelling = travelling.Count });
         }
         catch (CPCXException e)
         {
