@@ -77,7 +77,7 @@ class Program
 
                 foreach (var session in _sessions)
                 {
-                    var response = await session.Client.GetAsync("/api/postcard/stats");
+                    var response = await session.Client.GetAsync("/api/LoadTest/postcard/stats");
                     if (response.IsSuccessStatusCode)
                     {
                         var stats = await response.Content.ReadFromJsonAsync<PostcardStatsResponse>();
@@ -114,7 +114,7 @@ class Program
         };
         var client = new HttpClient(handler) { BaseAddress = new Uri(BaseUrl) };
 
-        var response = await client.PostAsJsonAsync("/api/login",
+        var response = await client.PostAsJsonAsync("/api/LoadTest/login",
             new { username = credentials.Username, password = credentials.Password });
 
         if (!response.IsSuccessStatusCode)
@@ -126,7 +126,7 @@ class Program
 
     static async Task<IResponse> SendPostcard(UserSession session, Serilog.ILogger logger)
     {
-        var response = await session.Client.PostAsync("/api/postcard/send", null);
+        var response = await session.Client.PostAsync("/api/LoadTest/postcard/send", null);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -160,7 +160,7 @@ class Program
 
     static async Task<IResponse> RegisterPostcard(UserSession session, string postcardNum, Serilog.ILogger logger)
     {
-        var response = await session.Client.PostAsJsonAsync("/api/postcard/register",
+        var response = await session.Client.PostAsJsonAsync("/api/LoadTest/postcard/register",
             new { PostcardId = postcardNum });
 
         if (!response.IsSuccessStatusCode)

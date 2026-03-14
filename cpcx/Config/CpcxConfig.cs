@@ -7,4 +7,5 @@ public class CpcxConfig
     public string AvatarPath { get; init; } = "";
     public bool EnableLoadTestApi { get; init; } = false;
     public bool EnableRegistration { get; init; } = true;
+    public int PageSize { get; init; } = 10;
 }

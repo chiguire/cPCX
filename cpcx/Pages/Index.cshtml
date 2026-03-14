@@ -1,19 +1,86 @@
-﻿@page
+@page
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
 }
 
-<div>
-    <h1 class="display-4">Welcome to DeerPost!</h1>
+<h1 class="display-4">Welcome to DeerPost!</h1>
 
-    <partial name="_StatusMessage" model="Model.StatusMessage" />
+<partial name="_StatusMessage" model="Model.StatusMessage" />
 
-    <p>DeerPost is here to allow you to send and receive postcards in EMF, through SneakerNet.</p>
-    <p>The fundamental idea is: for each postcard you send, you will receive one back from a random member in this event.</p>
-    <p>This website is heavily inspired by <a href="https://www.postcrossing.com/about">Postcrossing</a>, 
-        which allows you to do the same with people from all over the world. 
-        Please do join Postcrossing if you like sending and receiving postcards!</p>
+<div class="row g-4 align-items-start">
+    @if (Model.CurrentUser is not null && Model.UserEventStats is not null)
+    {
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row g-0 text-center align-items-center mb-3">
+                        @if (!string.IsNullOrEmpty(Model.CurrentUser.AvatarPath))
+                        {
+                            <div class="col-auto pe-3">
+                                <img src="/zooka/avatars/@Uri.EscapeDataString(Model.CurrentUser.AvatarPath)"
+                                     class="avatar-profile"
+                                     alt="@Model.CurrentUser.UserName's avatar" />
+                            </div>
+                        }
+                        <div class="col">
+                            <h4 class="mb-0 text-start">
+                                <a asp-page="/User/Index" asp-route-alias="@Model.CurrentUser.UserName" class="text-decoration-none text-body">@Model.CurrentUser.UserName</a>
+                            </h4>
+                        </div>
+                        <div class="col border-start">
+                            <div class="text-muted small">Sent</div>
+                            <div class="fs-3 fw-bold"><i class="bx bx-export text-danger"></i> @Model.UserEventStats.PostcardsSent</div>
+                        </div>
+                        <div class="col border-start">
+                            <div class="text-muted small">Received</div>
+                            <div class="fs-3 fw-bold"><i class="bx bx-import text-danger"></i> @Model.UserEventStats.PostcardsReceived</div>
+                        </div>
+                    </div>
 
-    
+                    <div class="mb-3">
+                        <div class="small mb-1">
+                            <a asp-page="/Postcard/Travelling" class="text-decoration-none">
+                                <i class="bx bxs-plane-alt"></i> Travelling postcards: @Model.TravellingPostcards.Count / @Model.MaxTravellingPostcards
+                            </a>
+                        </div>
+                        @if (Model.TravellingPostcards.Count > 0)
+                        {
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var postcard in Model.TravellingPostcards)
+                                {
+                                    <li><a asp-page="/Postcard/Index" asp-route-postcardId="@postcard.FullPostCardId">@postcard.FullPostCardId</a></li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-muted small fst-italic">No travelling postcards</span>
+                        }
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-page="/Postcard/Send" class="btn btn-primary btn-lg">
+                            <i class="bx bx-export"></i> Send a Postcard
+                        </a>
+                        <a asp-page="/Postcard/Register" class="btn btn-outline-primary btn-lg">
+                            <i class="bx bx-import"></i> Register a Postcard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">About DeerPost</h5>
+                <p>DeerPost is here to allow you to send and receive postcards in EMF, through SneakerNet.</p>
+                <p>The fundamental idea is: for each postcard you send, you will receive one back from a random member in this event.</p>
+                <p class="mb-0">This website is heavily inspired by <a href="https://www.postcrossing.com/about">Postcrossing</a>,
+                    which allows you to do the same with people from all over the world.
+                    Please do join Postcrossing if you like sending and receiving postcards!</p>
+            </div>
+        </div>
+    </div>
 </div>

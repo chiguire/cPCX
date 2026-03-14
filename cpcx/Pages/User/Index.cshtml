@@ -39,20 +39,170 @@
         </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">About @Model.UserProfile.UserName...</h5>
-            <p class="card-text twemoji">@Model.UserProfile.ProfileDescription</p>
+    <div class="card mt-4">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="postcardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="about-tab" data-bs-toggle="tab" data-bs-target="#about-pane"
+                            type="button" role="tab" aria-controls="about-pane" aria-selected="true">
+                        About
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent-pane"
+                            type="button" role="tab" aria-controls="sent-pane" aria-selected="false">
+                        Sent <span class="badge bg-secondary">@Model.SentTotalCount</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="received-tab" data-bs-toggle="tab" data-bs-target="#received-pane"
+                            type="button" role="tab" aria-controls="received-pane" aria-selected="false">
+                        Received <span class="badge bg-secondary">@Model.ReceivedTotalCount</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body tab-content" id="postcardTabsContent">
+
+            @* ── About tab ── *@
+            <div class="tab-pane fade show active position-relative" id="about-pane" role="tabpanel" aria-labelledby="about-tab">
+                @if (Model.OwnProfile)
+                {
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index"
+                       class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0">Edit profile</a>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0 position-absolute top-0 end-0">Report Profile</p>
+                }
+                <h5 class="card-title">About @Model.UserProfile.UserName...</h5>
+                <p class="card-text twemoji">@Model.UserProfile.ProfileDescription</p>
+            </div>
+
+            @* ── Sent tab ── *@
+            <div class="tab-pane fade" id="sent-pane" role="tabpanel" aria-labelledby="sent-tab">
+                @if (Model.SentPostcards.Count == 0)
+                {
+                    <p class="text-muted mb-0">No postcards sent yet.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-2">
+                        <thead>
+                            <tr>
+                                <th>Postcard</th>
+                                <th>Recipient</th>
+                                <th>Sent</th>
+                                <th>Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model.SentPostcards)
+                            {
+                                <tr>
+                                    <td><a asp-page="/Postcard/Index" asp-route-postcardId="@p.FullPostCardId">@p.FullPostCardId</a></td>
+                                    <td><a asp-page="/User/Index" asp-route-alias="@p.Receiver.UserName">@p.Receiver.UserName</a></td>
+                                    <td>@p.SentOn.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                    <td>
+                                        @if (p.ReceivedOn.HasValue && p.ReceivedOn != DateTime.UnixEpoch)
+                                        { @p.ReceivedOn.Value.ToString("yyyy-MM-dd HH:mm:ss") }
+                                        else
+                                        { <span class="text-muted">—</span> }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @if (Model.SentTotalPages > 1)
+                    {
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                @for (int i = 1; i <= Model.SentTotalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.SentPage ? "active" : "")">
+                                        <a class="page-link"
+                                           asp-page="/User/Index"
+                                           asp-route-alias="@Model.UserProfile.UserName"
+                                           asp-route-sentPage="@i"
+                                           asp-route-receivedPage="@Model.ReceivedPage"
+                                           asp-route-tab="sent">@i</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                }
+            </div>
+
+            @* ── Received tab ── *@
+            <div class="tab-pane fade" id="received-pane" role="tabpanel" aria-labelledby="received-tab">
+                @if (Model.ReceivedPostcards.Count == 0)
+                {
+                    <p class="text-muted mb-0">No postcards received yet.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-2">
+                        <thead>
+                            <tr>
+                                <th>Postcard</th>
+                                <th>Sender</th>
+                                <th>Sent</th>
+                                <th>Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model.ReceivedPostcards)
+                            {
+                                <tr>
+                                    <td><a asp-page="/Postcard/Index" asp-route-postcardId="@p.FullPostCardId">@p.FullPostCardId</a></td>
+                                    <td><a asp-page="/User/Index" asp-route-alias="@p.Sender.UserName">@p.Sender.UserName</a></td>
+                                    <td>@p.SentOn.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                    <td>
+                                        @if (p.ReceivedOn.HasValue && p.ReceivedOn != DateTime.UnixEpoch)
+                                        { @p.ReceivedOn.Value.ToString("yyyy-MM-dd HH:mm:ss") }
+                                        else
+                                        { <span class="text-muted">—</span> }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @if (Model.ReceivedTotalPages > 1)
+                    {
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                @for (int i = 1; i <= Model.ReceivedTotalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.ReceivedPage ? "active" : "")">
+                                        <a class="page-link"
+                                           asp-page="/User/Index"
+                                           asp-route-alias="@Model.UserProfile.UserName"
+                                           asp-route-sentPage="@Model.SentPage"
+                                           asp-route-receivedPage="@i"
+                                           asp-route-tab="received">@i</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                }
+            </div>
+
         </div>
     </div>
 
-    @if (Model.OwnProfile)
-    {
-        <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-outline-secondary">Edit profile</a>
-    }
-    else
-    {
-        <p>Report Profile</p>
-    }
-
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var tab = new URLSearchParams(window.location.search).get('tab');
+            if (tab === 'sent' || tab === 'received') {
+                var btn = document.getElementById(tab + '-tab');
+                if (btn) bootstrap.Tab.getOrCreateInstance(btn).show();
+            }
+        })();
+    </script>
+}
+

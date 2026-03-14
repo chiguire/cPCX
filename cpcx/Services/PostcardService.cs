@@ -15,6 +15,8 @@ namespace cpcx.Services
         Task<Postcard> GetPostcard(string postcardId);
         
         Task<List<Postcard>> GetTravellingPostcards(Guid userId, Guid eventId, bool includeExpired);
+        Task<(List<Postcard> Items, int TotalCount)> GetSentPostcards(Guid userId, Guid eventId, int page, int pageSize);
+        Task<(List<Postcard> Items, int TotalCount)> GetReceivedPostcards(Guid userId, Guid eventId, int page, int pageSize);
     }
 
     public class PostcardService(
@@ -255,6 +257,34 @@ namespace cpcx.Services
                 ).ToListAsync();
         
             return travellingPostcards;
+        }
+
+        public async Task<(List<Postcard> Items, int TotalCount)> GetSentPostcards(Guid userId, Guid eventId, int page, int pageSize)
+        {
+            var query = context.Postcards
+                .Include(p => p.Event)
+                .Include(p => p.Receiver)
+                .Where(p => p.Sender.Id == userId && p.Event.Id == eventId &&
+                            p.ReceivedOn != null && p.ReceivedOn != DateTime.UnixEpoch)
+                .OrderByDescending(p => p.SentOn);
+
+            var total = await query.CountAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            return (items, total);
+        }
+
+        public async Task<(List<Postcard> Items, int TotalCount)> GetReceivedPostcards(Guid userId, Guid eventId, int page, int pageSize)
+        {
+            var query = context.Postcards
+                .Include(p => p.Event)
+                .Include(p => p.Sender)
+                .Where(p => p.Receiver.Id == userId && p.Event.Id == eventId &&
+                            p.ReceivedOn != null && p.ReceivedOn != DateTime.UnixEpoch)
+                .OrderByDescending(p => p.SentOn);
+
+            var total = await query.CountAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            return (items, total);
         }
     }
 }

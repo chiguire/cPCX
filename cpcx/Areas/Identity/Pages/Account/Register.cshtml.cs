@@ -29,6 +29,7 @@ namespace cpcx.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly MainEventService _mainEventService;
         private readonly IEventService _eventService;
+        private readonly IAvatarService _avatarService;
         private readonly CpcxConfig _cpcxConfig;
 
         public RegisterModel(
@@ -39,6 +40,7 @@ namespace cpcx.Areas.Identity.Pages.Account
             IEmailSender emailSender,
             MainEventService mainEventService,
             IEventService eventService,
+            IAvatarService avatarService,
             IOptions<CpcxConfig> cpcxConfig)
         {
             _userManager = userManager;
@@ -49,6 +51,7 @@ namespace cpcx.Areas.Identity.Pages.Account
             _emailSender = emailSender;
             _mainEventService = mainEventService;
             _eventService = eventService;
+            _avatarService = avatarService;
             _cpcxConfig = cpcxConfig.Value;
         }
 
@@ -110,6 +113,9 @@ namespace cpcx.Areas.Identity.Pages.Account
                 await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
                 // To be set on profile
                 // await _emailStore.SetEmailAsync(user, Input.Username, CancellationToken.None);
+                var avatars = _avatarService.GetAvatarListForUser(user);
+                if (avatars.Count > 0)
+                    user.AvatarPath = avatars[Random.Shared.Next(avatars.Count)];
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)

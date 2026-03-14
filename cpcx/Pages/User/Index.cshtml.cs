@@ -1,22 +1,41 @@
+using cpcx.Config;
 using cpcx.Entities;
 using cpcx.Models;
 using cpcx.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace cpcx.Pages.User;
 
 [Authorize]
-public class Index(UserManager<CpcxUser> userManager, IUserService userService, MainEventService mainEventService) : MessagePageModel
+public class Index(
+    UserManager<CpcxUser> userManager,
+    IUserService userService,
+    IPostcardService postcardService,
+    MainEventService mainEventService,
+    IOptions<CpcxConfig> cpcxConfig) : MessagePageModel
 {
-    public CpcxUser UserProfile { get; set; } = null!;
-    
-    public EventUser ProfileStats { get; set; } = null!;
+    private readonly int _pageSize = cpcxConfig.Value.PageSize;
 
+    public CpcxUser UserProfile { get; set; } = null!;
+    public EventUser ProfileStats { get; set; } = null!;
     public bool OwnProfile { get; set; } = false;
-    
-    public async Task<IActionResult> OnGet(string alias)
+
+    public List<Entities.Postcard> SentPostcards { get; set; } = [];
+    public int SentTotalCount { get; set; }
+    public int SentPage { get; set; }
+
+    public List<Entities.Postcard> ReceivedPostcards { get; set; } = [];
+    public int ReceivedTotalCount { get; set; }
+    public int ReceivedPage { get; set; }
+
+    public int PageSize => _pageSize;
+    public int SentTotalPages => (int)Math.Ceiling((double)SentTotalCount / _pageSize);
+    public int ReceivedTotalPages => (int)Math.Ceiling((double)ReceivedTotalCount / _pageSize);
+
+    public async Task<IActionResult> OnGet(string alias, int sentPage = 1, int receivedPage = 1)
     {
         var mainEventId = await mainEventService.GetMainEventId();
         var us = await userManager.FindByNameAsync(alias);
@@ -32,6 +51,12 @@ public class Index(UserManager<CpcxUser> userManager, IUserService userService, 
         UserProfile = us;
         ProfileStats = eu;
         OwnProfile = (await userManager.GetUserAsync(User))!.Id == us.Id;
+
+        SentPage = Math.Max(1, sentPage);
+        ReceivedPage = Math.Max(1, receivedPage);
+
+        (SentPostcards, SentTotalCount) = await postcardService.GetSentPostcards(us.Id, mainEventId, SentPage, _pageSize);
+        (ReceivedPostcards, ReceivedTotalCount) = await postcardService.GetReceivedPostcards(us.Id, mainEventId, ReceivedPage, _pageSize);
 
         return Page();
     }
