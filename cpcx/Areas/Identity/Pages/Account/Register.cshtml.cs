@@ -6,9 +6,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
+using cpcx.Config;
 using cpcx.Entities;
 using cpcx.Models;
 using cpcx.Services;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +29,7 @@ namespace cpcx.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly MainEventService _mainEventService;
         private readonly IEventService _eventService;
+        private readonly CpcxConfig _cpcxConfig;
 
         public RegisterModel(
             UserManager<CpcxUser> userManager,
@@ -35,7 +38,8 @@ namespace cpcx.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
             MainEventService mainEventService,
-            IEventService eventService)
+            IEventService eventService,
+            IOptions<CpcxConfig> cpcxConfig)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -45,6 +49,7 @@ namespace cpcx.Areas.Identity.Pages.Account
             _emailSender = emailSender;
             _mainEventService = mainEventService;
             _eventService = eventService;
+            _cpcxConfig = cpcxConfig.Value;
         }
 
         [BindProperty]
@@ -75,14 +80,27 @@ namespace cpcx.Areas.Identity.Pages.Account
         }
 
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
+            if (!_cpcxConfig.EnableRegistration)
+            {
+                TempData["StatusMessage"] = $"{StatusMessageType.Info}%Registrations for new users are currently closed.";
+                return RedirectToPage("/Index", new { area = "" });
+            }
+
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
+            if (!_cpcxConfig.EnableRegistration)
+            {
+                TempData["StatusMessage"] = $"{StatusMessageType.Info}%Registrations for new users are currently closed.";
+                return RedirectToPage("/Index", new { area = "" });
+            }
+
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)

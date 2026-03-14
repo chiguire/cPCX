@@ -6,4 +6,5 @@ public class CpcxConfig
     public string ActiveEventId { get; init; } = "E26";
     public string AvatarPath { get; init; } = "";
     public bool EnableLoadTestApi { get; init; } = false;
+    public bool EnableRegistration { get; init; } = true;
 }
