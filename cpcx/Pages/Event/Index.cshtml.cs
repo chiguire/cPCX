@@ -27,8 +27,7 @@ public class Index(IEventService eventService,
         public bool UserActiveInEvent { get; set; }
 
         [Display(Name = "Address in event", Description = "Be as specific as necessary. Look out for experimental postcodes if that helps")]
-        [Required(ErrorMessage = "Address is required. Set yourself to inactive until you have an address")]
-        public string AddressInEvent { get; set; } = "";
+        public string? AddressInEvent { get; set; } = "";
 
     }
     
@@ -58,15 +57,18 @@ public class Index(IEventService eventService,
 
     public async Task<IActionResult> OnPostEvent()
     {
+        if (Input.UserActiveInEvent && string.IsNullOrWhiteSpace(Input.AddressInEvent))
+            ModelState.AddModelError(nameof(Input.AddressInEvent), "Address is required when active in event.");
+
         if (ModelState.IsValid)
         {
             var us = (await userManager.GetUserAsync(User))!;
-            var eventId = new Guid(Input.EventId);
+            var eventId = await mainEventService.GetMainEventId();
             var eu = await userService.GetEventUser(eventId, us.Id);
             
             if (eu.Address != Input.AddressInEvent)
             {
-                await userService.SetUserAddress(us.Id, eventId, Input.AddressInEvent);
+                await userService.SetUserAddress(us.Id, eventId, Input.AddressInEvent ?? "");
             }
 
             if (eu.ActiveInEvent != Input.UserActiveInEvent)

@@ -1,5 +1,4 @@
 @page "{eventPublicId?}"
-@using Microsoft.AspNetCore.Html
 @model cpcx.Pages.Event.Index
 
 @{
@@ -31,30 +30,67 @@
                     <dd>@Model.CurrentEvent.Venue</dd>
                     <dt>Dates:</dt>
                     <dd>From @FormatDate(Model.CurrentEvent.Start) to @FormatDate(Model.CurrentEvent.End)</dd>
-                    <dt>Can you send postcards with cPCX for this event?</dt>
-                    <dd>@(Model.CurrentEvent.Open? "Yes (Event is open)": "No (Event is closed)") (Postcards can be only sent while the event is open)</dd>
+                    <dt>Can you send postcards with DeerPost for this event?</dt>
+                    <dd>@(Model.CurrentEvent.Open? "Yes (Event is open, ": "No (Event is closed, ") postcards can be only sent while the event is open)</dd>
+                    <dt>Can you receive postcards in this event?</dt>
+                    <dd>@(Model.Input!.UserActiveInEvent ? "Yes (you are active in this event)" : "No (you are not active in this event)")</dd>
                 </dl>
             </div>
             <div class="col">
-                <form method="post">
-                    <h2>Your information in the event</h2>
+                <form method="post" asp-page-handler="Event">
+                    <h2>Your address in the event</h2>
                     <div class="form-floating mb-3">
-                        <textarea asp-for="Input!.AddressInEvent" class="form-control" style="height: 100px" aria-describedby="AddressInEvent-description"></textarea>
+                        <textarea asp-for="Input.AddressInEvent" class="form-control" id="addressInput" style="height: 100px" aria-describedby="AddressInEvent-description"></textarea>
                         <label asp-for="Input.AddressInEvent" class="form-label"></label>
-                        <span id="AddressInEvent-description" class="form-text text-muted">Be as specific as necessary when writing your address. Look out for <a href="https://wiki.emfcamp.org/2024/wiki/Sneakernet">experimental postcodes</a> if that helps.</span>
-                        <span asp-validation-for="Input.AddressInEvent" class="text-danger"></span>
+                        <span id="AddressInEvent-description" class="form-text text-muted">Be as specific as necessary when writing your address. Look out for <a href="https://wiki.emfcamp.org/2024/wiki/Sneakernet">experimental postcodes</a> if that helps. You need an address in the event to become active.</span>
                     </div>
                     <div class="form-check mb-3">
-                        <input asp-for="Input.UserActiveInEvent" class="form-check-input" aria-describedby="Input.UserActiveInEvent-description" />
+                        <input asp-for="Input.UserActiveInEvent" class="form-check-input" id="activeCheckbox" aria-describedby="Input.UserActiveInEvent-description" />
                         <label asp-for="Input.UserActiveInEvent" class="form-check-label"></label>
                         <div id="UserActiveInEvent-description" class="form-text text-muted">Uncheck "Active in event" to mark yourself away (e.g. you're leaving early), you will not receive new postcards</div>
                     </div>
                     <input type="hidden" asp-for="Input.EventId" />
+                    <span asp-validation-for="Input.AddressInEvent" class="text-danger d-block mb-2" id="addressValidation"></span>
                     <button id="update-event-button" type="submit" class="btn btn-primary">Save</button>
                 </form>
             </div>
         </div>
     </div>
-    
-    
+
+
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const address = document.getElementById('addressInput');
+            const active = document.getElementById('activeCheckbox');
+            const addressError = document.getElementById('addressValidation');
+            const addressStartedEmpty = address.value.trim() === '';
+
+            address.addEventListener('input', function () {
+                if (addressStartedEmpty && address.value.trim() !== '') {
+                    active.checked = true;
+                }
+                if (address.value.trim() !== '') {
+                    addressError.textContent = '';
+                }
+            });
+
+            active.addEventListener('change', function () {
+                if (active.checked && address.value.trim() === '') {
+                    addressError.textContent = 'Address is required when active in event.';
+                    active.checked = false;
+                }
+            });
+
+            document.querySelector('form').addEventListener('submit', function (e) {
+                if (active.checked && address.value.trim() === '') {
+                    addressError.textContent = 'Address is required when active in event.';
+                    e.preventDefault();
+                }
+            });
+        })();
+    </script>
+}
