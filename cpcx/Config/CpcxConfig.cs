@@ -5,5 +5,5 @@ public class CpcxConfig
     public const string Cpcx = "Cpcx";
     public string ActiveEventId { get; init; } = "E26";
     public string AvatarPath { get; init; } = "";
-    public bool EnableApi { get; init; } = false;
+    public bool EnableLoadTestApi { get; init; } = false;
 }

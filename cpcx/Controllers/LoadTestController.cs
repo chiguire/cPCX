@@ -8,15 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 namespace cpcx.Controllers;
 
 [ApiController]
-[Route("api")]
-public class ApiController(
+[Route("api/[controller]")]
+public class LoadTestController(
     SignInManager<CpcxUser> signInManager,
     UserManager<CpcxUser> userManager,
     IPostcardService postcardService,
     IEventService eventService,
     IUserService userService,
     MainEventService mainEventService,
-    ILogger<ApiController> logger) : ControllerBase
+    ILogger<LoadTestController> logger) : ControllerBase
 {
     public record LoginRequest(string Username, string Password);
     public record RegisterPostcardRequest(string PostcardId);

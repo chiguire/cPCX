@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
@@ -7,31 +7,121 @@
 <h1>@ViewData["Title"]</h1>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-9">
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account (You can set an email after creating the account)</h2>
+            <h2>Create a new account</h2>
             <hr />
+            <p>You can set an email after creating the account</p>
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="username" />
-                <label asp-for="Input.Username">Username</label>
-                <span asp-validation-for="Input.Username" class="text-danger"></span>
+
+            <div class="row mb-3 align-items-center">
+                <div class="col-7">
+                    <div class="form-floating">
+                        <input asp-for="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="username" id="usernameInput" />
+                        <label asp-for="Input.Username">Username</label>
+                        <span asp-validation-for="Input.Username" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-5">
+                    <span id="usernameAvailability" class="small"></span>
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+
+            <div class="row mb-3 align-items-start">
+                <div class="col-7">
+                    <div class="form-floating">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="passwordInput" />
+                        <label asp-for="Input.Password">Password</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-5 pt-2">
+                    <ul class="list-unstyled small mb-0">
+                        <li id="req-length" class="text-danger">At least 6 characters</li>
+                        <li id="req-upper" class="text-danger">At least one uppercase letter (A–Z)</li>
+                        <li id="req-lower" class="text-danger">At least one lowercase letter (a–z)</li>
+                        <li id="req-digit" class="text-danger">At least one digit (0–9)</li>
+                        <li id="req-special" class="text-danger">At least one special character</li>
+                    </ul>
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+
+            <div class="row mb-3">
+                <div class="col-7">
+                    <div class="form-floating">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+
+            <div class="row">
+                <div class="col-7">
+                    <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+                </div>
+            </div>
         </form>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            // Username availability check
+            const usernameInput = document.getElementById('usernameInput');
+            const status = document.getElementById('usernameAvailability');
+            let debounceTimer;
+
+            usernameInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                status.textContent = '';
+                status.className = 'small';
+
+                const username = usernameInput.value.trim();
+                if (!username) return;
+
+                status.textContent = 'Checking if username is available\u2026';
+                status.className = 'small text-muted';
+
+                debounceTimer = setTimeout(async function () {
+                    try {
+                        const response = await fetch('/api/Register/CheckUserAlias', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(username)
+                        });
+                        const isAvailable = await response.json();
+                        if (isAvailable) {
+                            status.textContent = 'Username is available.';
+                            status.className = 'small text-success';
+                        } else {
+                            status.textContent = 'Username is already taken.';
+                            status.className = 'small text-danger';
+                        }
+                    } catch {
+                        status.textContent = '';
+                    }
+                }, 200);
+            });
+
+            // Password requirements
+            const passwordInput = document.getElementById('passwordInput');
+            const checks = {
+                'req-length':  v => v.length >= 6,
+                'req-upper':   v => /[A-Z]/.test(v),
+                'req-lower':   v => /[a-z]/.test(v),
+                'req-digit':   v => /[0-9]/.test(v),
+                'req-special': v => /[^a-zA-Z0-9]/.test(v),
+            };
+
+            passwordInput.addEventListener('input', function () {
+                const value = passwordInput.value;
+                for (const [id, check] of Object.entries(checks)) {
+                    document.getElementById(id).className = check(value) ? 'text-success' : 'text-danger';
+                }
+            });
+        })();
+    </script>
 }

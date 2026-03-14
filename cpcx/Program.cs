@@ -1,8 +1,12 @@
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using cpcx.Data;
 using cpcx.Entities;
 using cpcx.Config;
+using cpcx.Controllers;
+using cpcx.Infrastructure;
 using cpcx.Middleware;
 using cpcx.Services;
 
@@ -37,10 +41,29 @@ builder.Services
         options.User.RequireUniqueEmail = false;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
-var enableApi = builder.Configuration.GetValue<bool>($"{CpcxConfig.Cpcx}:EnableApi");
-if (enableApi)
-    builder.Services.AddControllers();
+var enableLoadTestApi = builder.Configuration.GetValue<bool>($"{CpcxConfig.Cpcx}:EnableLoadTestApi");
+builder.Services.AddControllers(options =>
+{
+    if (!enableLoadTestApi)
+    {
+        options.Conventions.Add(new DisableControllerConvention(typeof(LoadTestController)));
+    }
+});
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("check-alias", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 4,
+                Window = TimeSpan.FromSeconds(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AddPageRoute("/Postcard/Travelling", "/Postcard/Traveling");
@@ -66,10 +89,11 @@ app.UseMiddleware<IpAllowlistMiddleware>();
 
 app.UseRouting();
 
+app.UseRateLimiter();
+
 app.UseAuthorization();
 
 app.MapRazorPages();
-if (enableApi)
-    app.MapControllers();
+app.MapControllers();
 
 app.Run();
