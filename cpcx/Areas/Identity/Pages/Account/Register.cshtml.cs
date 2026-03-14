@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using cpcx.Entities;
+using cpcx.Models;
 using cpcx.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -56,8 +57,8 @@ namespace cpcx.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
-            [RegularExpression(@"^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-]{1,40}$", 
-                ErrorMessage = "Characters are not allowed.")]
+            [RegularExpression(@"^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-]{3,40}$",
+                ErrorMessage = "Username must be 3–40 characters and may only contain letters, digits, '.', '_', or '-'.")]
             [Display(Name = "Username")]
             public string Username { get; set; }
 
@@ -102,7 +103,9 @@ namespace cpcx.Areas.Identity.Pages.Account
                     await _eventService.AddUser(mainEventId, user, "");
                      
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect(returnUrl);
+                    var publicId = await _mainEventService.GetMainEventPublicId();
+                    TempData["StatusMessage"] = $"{StatusMessageType.Info}%Please fill in your address as soon as possible so we know where to send your postcards!";
+                    return RedirectToPage("/Event/Index", new { area = "", eventPublicId = publicId });
 
                     // var userId = await _userManager.GetUserIdAsync(user);
                     // var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

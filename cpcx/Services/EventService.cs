@@ -9,7 +9,7 @@ namespace cpcx.Services
 {
     public interface IEventService
     {
-        Task AddUser(Guid id, CpcxUser u, string address);
+        Task AddUser(Guid id, CpcxUser u, string address, bool activeInEvent = false);
         Task UpdateUserAddress(Guid id, CpcxUser u, string address);
         Task CreateEvent(EventInput eventInput);
         Task<Event?> GetEvent(Guid id);
@@ -131,7 +131,7 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task AddUser(Guid id, CpcxUser u, string address)
+        public async Task AddUser(Guid id, CpcxUser u, string address, bool activeInEvent = false)
         {
             var eu = await context.FindAsync<EventUser>(id, u.Id);
             
@@ -153,6 +153,7 @@ namespace cpcx.Services
                 Event = e,
                 User = u,
                 Address = address,
+                ActiveInEvent = activeInEvent,
             };
 
             context.EventUsers.Add(v);
