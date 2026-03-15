@@ -18,6 +18,9 @@ builder.Services.Configure<PostcardConfig>(
      builder.Configuration.GetSection(PostcardConfig.Postcard));
 builder.Services.Configure<IpAllowlistConfig>(
     builder.Configuration.GetSection(IpAllowlistConfig.IpAllowlist));
+builder.Services.Configure<SmtpConfig>(
+    builder.Configuration.GetSection(SmtpConfig.Smtp));
+builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IPostcardService, PostcardService>();

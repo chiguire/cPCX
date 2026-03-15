@@ -1,21 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
 using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Authentication;
 using cpcx.Config;
 using cpcx.Entities;
 using cpcx.Models;
 using cpcx.Services;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace cpcx.Areas.Identity.Pages.Account
 {
@@ -24,9 +20,7 @@ namespace cpcx.Areas.Identity.Pages.Account
         private readonly SignInManager<CpcxUser> _signInManager;
         private readonly UserManager<CpcxUser> _userManager;
         private readonly IUserStore<CpcxUser> _userStore;
-        private readonly IUserEmailStore<CpcxUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        private readonly IEmailSender _emailSender;
         private readonly MainEventService _mainEventService;
         private readonly IEventService _eventService;
         private readonly IAvatarService _avatarService;
@@ -37,7 +31,6 @@ namespace cpcx.Areas.Identity.Pages.Account
             IUserStore<CpcxUser> userStore,
             SignInManager<CpcxUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender,
             MainEventService mainEventService,
             IEventService eventService,
             IAvatarService avatarService,
@@ -45,10 +38,8 @@ namespace cpcx.Areas.Identity.Pages.Account
         {
             _userManager = userManager;
             _userStore = userStore;
-            _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
-            _emailSender = emailSender;
             _mainEventService = mainEventService;
             _eventService = eventService;
             _avatarService = avatarService;
@@ -82,7 +73,6 @@ namespace cpcx.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
-
         public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
             if (!_cpcxConfig.EnableRegistration)
@@ -111,8 +101,6 @@ namespace cpcx.Areas.Identity.Pages.Account
                 var user = CreateUser();
 
                 await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
-                // To be set on profile
-                // await _emailStore.SetEmailAsync(user, Input.Username, CancellationToken.None);
                 var avatars = _avatarService.GetAvatarListForUser(user);
                 if (avatars.Count > 0)
                     user.AvatarPath = avatars[Random.Shared.Next(avatars.Count)];
@@ -121,37 +109,14 @@ namespace cpcx.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
-                    
-                    // Add user automatically to main event
+
                     var mainEventId = await _mainEventService.GetMainEventId();
                     await _eventService.AddUser(mainEventId, user, "");
-                     
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     var publicId = await _mainEventService.GetMainEventPublicId();
                     TempData["StatusMessage"] = $"{StatusMessageType.Info}%Please fill in your address as soon as possible so we know where to send your postcards!";
                     return RedirectToPage("/Event/Index", new { area = "", eventPublicId = publicId });
-
-                    // var userId = await _userManager.GetUserIdAsync(user);
-                    // var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    // code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    // var callbackUrl = Url.Page(
-                    //     "/Account/ConfirmEmail",
-                    //     pageHandler: null,
-                    //     values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                    //     protocol: Request.Scheme);
-
-                    //await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                    //    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                    // if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    // {
-                    //     return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    // }
-                    // else
-                    // {
-                    //     await _signInManager.SignInAsync(user, isPersistent: false);
-                    //     return LocalRedirect(returnUrl);
-                    // }
                 }
                 foreach (var error in result.Errors)
                 {
@@ -159,7 +124,6 @@ namespace cpcx.Areas.Identity.Pages.Account
                 }
             }
 
-            // If we got this far, something failed, redisplay form
             return Page();
         }
 
@@ -175,15 +139,6 @@ namespace cpcx.Areas.Identity.Pages.Account
                     $"Ensure that '{nameof(User)}' is not an abstract class and has a parameterless constructor, or alternatively " +
                     $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
             }
-        }
-
-        private IUserEmailStore<CpcxUser> GetEmailStore()
-        {
-            if (!_userManager.SupportsUserEmail)
-            {
-                throw new NotSupportedException("The default UI requires a user store with email support.");
-            }
-            return (IUserEmailStore<CpcxUser>)_userStore;
         }
     }
 }

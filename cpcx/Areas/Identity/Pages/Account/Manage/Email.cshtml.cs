@@ -7,12 +7,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using cpcx.Config;
 using cpcx.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 
 namespace cpcx.Areas.Identity.Pages.Account.Manage
 {
@@ -21,15 +23,18 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<CpcxUser> _userManager;
         private readonly SignInManager<CpcxUser> _signInManager;
         private readonly IEmailSender _emailSender;
+        private readonly SmtpConfig _smtpConfig;
 
         public EmailModel(
             UserManager<CpcxUser> userManager,
             SignInManager<CpcxUser> signInManager,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IOptions<SmtpConfig> smtpConfig)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _smtpConfig = smtpConfig.Value;
         }
 
         /// <summary>
@@ -116,20 +121,28 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             var email = await _userManager.GetEmailAsync(user);
             if (Input.NewEmail != email)
             {
-                var userId = await _userManager.GetUserIdAsync(user);
-                var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                var callbackUrl = Url.Page(
-                    "/Account/ConfirmEmailChange",
-                    pageHandler: null,
-                    values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code },
-                    protocol: Request.Scheme);
-                await _emailSender.SendEmailAsync(
-                    Input.NewEmail,
-                    "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                if (!string.IsNullOrEmpty(_smtpConfig.Host))
+                {
+                    var userId = await _userManager.GetUserIdAsync(user);
+                    var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmailChange",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code },
+                        protocol: Request.Scheme);
+                    await _emailSender.SendEmailAsync(
+                        Input.NewEmail,
+                        "Confirm your email",
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                StatusMessage = "Confirmation link to change email sent. Please check your email.";
+                    StatusMessage = "Confirmation link to change email sent. Please check your email.";
+                }
+                else
+                {
+                    await _userManager.SetEmailAsync(user, Input.NewEmail);
+                    StatusMessage = "Email updated.";
+                }
                 return RedirectToPage();
             }
 
