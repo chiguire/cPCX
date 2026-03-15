@@ -21,18 +21,6 @@
                         <span class="input-group-text">-</span>
                         <input asp-for="PostcardId" pattern="[0-9]+" class="form-control" minlength="1" />
                     </div>
-                    <div class="mb-3">
-                        <label asp-for="MessageToSender" class="input-group-text"></label>
-                        <textarea asp-for="MessageToSender" class="form-control" style="height: 100px" maxlength="5000"
-                            placeholder="Use this space to send a thank you message to the sender of the postcard."></textarea>
-                    </div>
-                    <div class="position-relative mb-3">
-                        <input asp-for="ReceiverGetsCopyOfMessage" class="form-check-input"> <label asp-for="ReceiverGetsCopyOfMessage" class="form-check-label"></label>
-                        
-                        <div id="MessageToSenderLengthDisplay" class="position-absolute top-0 end-0">
-                            0/5000
-                        </div>
-                    </div>
                     <input type="submit" value="Register Postcard" class="btn btn-primary"/>
                 </form>
             </div>
@@ -48,19 +36,3 @@
     </div>
 </div>
 
-@section Scripts {
-    <script language="JavaScript">
-        function updateLength() {
-            const m = $("#MessageToSender");
-            $("#MessageToSenderLengthDisplay").text(m.val().length + "/" + m[0].maxLength);
-        }
-        $().ready(function() {
-            updateLength();
-        });
-        $("#MessageToSender").on("input", function() {
-            updateLength();
-        });
-    
-    
-    </script>
-}
