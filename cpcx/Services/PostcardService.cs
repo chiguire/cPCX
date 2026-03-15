@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using cpcx.Config;
+﻿using cpcx.Config;
 using cpcx.Data;
 using cpcx.Entities;
 using cpcx.Exceptions;

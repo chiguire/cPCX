@@ -72,6 +72,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             Visible = true,
         };
 
+        var avatarPath = configuration.GetValue<string>("Cpcx:AvatarPath") ?? "";
+        var avatarFiles = (!string.IsNullOrEmpty(avatarPath) && Directory.Exists(avatarPath))
+            ? Directory.GetFiles(avatarPath).Select(Path.GetFileName).Where(f => f != null).ToArray()!
+            : [];
+
         var zones = new[] { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
         var userList = Enumerable.Range(1, 200).Select(i => new CpcxUser
         {
@@ -83,6 +88,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             PasswordHash = devpassword,
             Pronouns = Pronoun.Neutral,
             ProfileDescription = $"Load test user {i}",
+            AvatarPath = avatarFiles.Length > 0 ? avatarFiles[Random.Shared.Next(avatarFiles.Length)] : "",
             BlockedUsers = [],
             SecurityStamp = SeededGuid(i + 1000).ToString(),
         }).ToList();

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using cpcx.Data;
+﻿using cpcx.Data;
 using cpcx.Entities;
 using cpcx.Exceptions;
 using cpcx.Inputs;
@@ -25,7 +24,7 @@ namespace cpcx.Services
 
     }
 
-    public class EventService(ApplicationDbContext context, IMapper mapper, ILogger<EventService> logger)
+    public class EventService(ApplicationDbContext context, ILogger<EventService> logger)
         : IEventService
     {
         public async Task CreateEvent(EventInput eventInput)
@@ -36,8 +35,16 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.EventNameAlreadyUsed);
             }
 
-            Event e = mapper.Map<Event>(eventInput);
-            e.Id = Guid.NewGuid();
+            Event e = new()
+            {
+                Id = Guid.NewGuid(),
+                Name = eventInput.Name,
+                Venue = eventInput.Venue,
+                Visible = eventInput.Visible,
+                Open = eventInput.Open,
+                Start = eventInput.Start,
+                End = eventInput.End,
+            };
 
             context.Events.Add(e);
 
@@ -85,7 +92,7 @@ namespace cpcx.Services
                 logger.LogError("Event {Event} not found", id);
                 throw new CPCXException(CPCXErrorCode.EventNotFound);
             }
-            if (context.Events.Any(e => e.Id != id && e.Name == value))
+            if (context.Events.Any(ev => ev.Id != id && ev.Name == value))
             {
                 logger.LogError("Event {Event} name {Name} already used in another event", id, value);
                 throw new CPCXException(CPCXErrorCode.EventNameAlreadyUsed);
