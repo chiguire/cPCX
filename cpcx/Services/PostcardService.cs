@@ -118,7 +118,15 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
             }
 
-            var blockedUserIds = u.BlockedUsers?.Select(u => u.Id).ToList() ?? [];
+            var sender = await context.Users
+                .Include(x => x.BlockedUsers)
+                .FirstAsync(x => x.Id == u.Id);
+            var blockedByMeIds = sender.BlockedUsers?.Select(b => b.Id).ToHashSet() ?? [];
+
+            var blockedMeIds = await context.Users
+                .Where(other => other.BlockedUsers!.Any(b => b.Id == u.Id))
+                .Select(other => other.Id)
+                .ToHashSetAsync();
 
             return await context.EventUsers
                 .Include(eu => eu.User)
@@ -129,8 +137,9 @@ namespace cpcx.Services
                     eu.ActiveInEvent &&
                     // Sender can't send a postcard to themselves
                     eu.UserId != u.Id &&
-                    // Recipient has not blocked the sender
-                    !blockedUserIds.Contains(u.Id)
+                    // Exclude users blocked by sender, and users who have blocked sender
+                    !blockedByMeIds.Contains(eu.UserId) &&
+                    !blockedMeIds.Contains(eu.UserId)
                 )
                 .OrderByDescending(eu => eu.PriorityScore)
                 .ThenBy(eu => EF.Functions.Random())
@@ -186,7 +195,7 @@ namespace cpcx.Services
             senderEu.PostcardsSent += 1;
             senderEu.PriorityScore++;
             receiverEu.PostcardsReceived += 1;
-            
+
             context.EventUsers.Update(senderEu);
             context.EventUsers.Update(receiverEu);
             context.Postcards.Update(postcardToRegister);

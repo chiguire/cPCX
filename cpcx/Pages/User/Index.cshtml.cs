@@ -22,6 +22,7 @@ public class Index(
     public CpcxUser UserProfile { get; set; } = null!;
     public EventUser ProfileStats { get; set; } = null!;
     public bool OwnProfile { get; set; } = false;
+    public bool IsBlockedByMe { get; set; } = false;
 
     public List<Entities.Postcard> SentPostcards { get; set; } = [];
     public int SentTotalCount { get; set; }
@@ -46,11 +47,21 @@ public class Index(
             return RedirectToPage("/Index");
         }
 
+        var currentUser = (await userManager.GetUserAsync(User))!;
+
+        // If the profile owner has blocked the current viewer, deny access
+        if (us.Id != currentUser.Id && await userService.HasBlocked(us.Id, currentUser.Id))
+        {
+            SetStatusMessage($"You cannot access {us.UserName}'s profile.", StatusMessageType.Error);
+            return RedirectToPage("/Index");
+        }
+
         var eu = await userService.GetEventUser(mainEventId, us.Id);
 
         UserProfile = us;
         ProfileStats = eu;
-        OwnProfile = (await userManager.GetUserAsync(User))!.Id == us.Id;
+        OwnProfile = currentUser.Id == us.Id;
+        IsBlockedByMe = !OwnProfile && await userService.HasBlocked(currentUser.Id, us.Id);
 
         SentPage = Math.Max(1, sentPage);
         ReceivedPage = Math.Max(1, receivedPage);
@@ -59,5 +70,27 @@ public class Index(
         (ReceivedPostcards, ReceivedTotalCount) = await postcardService.GetReceivedPostcards(us.Id, mainEventId, ReceivedPage, _pageSize);
 
         return Page();
+    }
+
+    public async Task<IActionResult> OnPostBlock(string alias)
+    {
+        var profileUser = await userManager.FindByNameAsync(alias);
+        var currentUser = await userManager.GetUserAsync(User);
+        if (profileUser == null || currentUser == null || profileUser.Id == currentUser.Id)
+            return RedirectToPage(new { alias });
+
+        await userService.BlockUser(currentUser.Id, profileUser.Id);
+        return RedirectToPage(new { alias });
+    }
+
+    public async Task<IActionResult> OnPostUnblock(string alias)
+    {
+        var profileUser = await userManager.FindByNameAsync(alias);
+        var currentUser = await userManager.GetUserAsync(User);
+        if (profileUser == null || currentUser == null)
+            return RedirectToPage(new { alias });
+
+        await userService.UnblockUser(currentUser.Id, profileUser.Id);
+        return RedirectToPage(new { alias });
     }
 }

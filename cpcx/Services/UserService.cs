@@ -16,6 +16,10 @@ public interface IUserService
     Task SetUserProfileDescription(CpcxUser user, string profileDescription);
     Task SetUserAvatar(CpcxUser user, string avatarPath);
     Task<EventUser> GetEventUser(Guid eventId, Guid userId);
+    Task BlockUser(Guid blockerId, Guid blockedId);
+    Task UnblockUser(Guid blockerId, Guid blockedId);
+    Task<List<CpcxUser>> GetBlockedUsers(Guid userId);
+    Task<bool> HasBlocked(Guid blockerId, Guid blockedId);
 }
 
 public class UserService(ApplicationDbContext context, ILogger<UserService> logger) : IUserService
@@ -83,7 +87,47 @@ public class UserService(ApplicationDbContext context, ILogger<UserService> logg
             logger.LogError("User {UserId} is not part of event {Event}", userId, eventId);
             throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
         }
-            
+
         return eu;
+    }
+
+    public async Task BlockUser(Guid blockerId, Guid blockedId)
+    {
+        var blocker = await context.Users.Include(u => u.BlockedUsers).FirstOrDefaultAsync(u => u.Id == blockerId);
+        var blocked = await context.Users.FindAsync(blockedId);
+        if (blocker == null || blocked == null) return;
+
+        blocker.BlockedUsers ??= [];
+        if (!blocker.BlockedUsers.Any(u => u.Id == blockedId))
+        {
+            blocker.BlockedUsers.Add(blocked);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    public async Task UnblockUser(Guid blockerId, Guid blockedId)
+    {
+        var blocker = await context.Users.Include(u => u.BlockedUsers).FirstOrDefaultAsync(u => u.Id == blockerId);
+        if (blocker?.BlockedUsers == null) return;
+
+        var blocked = blocker.BlockedUsers.FirstOrDefault(u => u.Id == blockedId);
+        if (blocked != null)
+        {
+            blocker.BlockedUsers.Remove(blocked);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<List<CpcxUser>> GetBlockedUsers(Guid userId)
+    {
+        var user = await context.Users.Include(u => u.BlockedUsers).FirstOrDefaultAsync(u => u.Id == userId);
+        return user?.BlockedUsers ?? [];
+    }
+
+    public async Task<bool> HasBlocked(Guid blockerId, Guid blockedId)
+    {
+        return await context.Users
+            .Where(u => u.Id == blockerId)
+            .AnyAsync(u => u.BlockedUsers!.Any(b => b.Id == blockedId));
     }
 }

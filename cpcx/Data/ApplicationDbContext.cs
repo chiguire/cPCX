@@ -13,7 +13,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<CpcxUser>();
+        builder.Entity<CpcxUser>()
+            .HasMany(u => u.BlockedUsers)
+            .WithMany()
+            .UsingEntity<Dictionary<string, object>>(
+                "UserBlocks",
+                j => j.HasOne<CpcxUser>().WithMany().HasForeignKey("BlockedUserId").OnDelete(DeleteBehavior.Cascade),
+                j => j.HasOne<CpcxUser>().WithMany().HasForeignKey("BlockerId").OnDelete(DeleteBehavior.Cascade)
+            );
 
         builder.Entity<Event>(e =>
         {

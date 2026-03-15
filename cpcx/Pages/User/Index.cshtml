@@ -71,9 +71,23 @@
                     <a asp-area="Identity" asp-page="/Account/Manage/Index"
                        class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0">Edit profile</a>
                 }
+                else if (Model.IsBlockedByMe)
+                {
+                    <form method="post" asp-page-handler="Unblock" asp-route-alias="@Model.UserProfile.UserName"
+                          class="position-absolute top-0 end-0">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                data-bs-toggle="tooltip"
+                                title="Blocking a user prevents them from seeing your profile. Sending a postcard will skip their account, and yours will be skipped when they send a postcard. Existing postcards can still be registered.">Unblock</button>
+                    </form>
+                }
                 else
                 {
-                    <p class="text-muted small mb-0 position-absolute top-0 end-0">Report Profile</p>
+                    <form method="post" asp-page-handler="Block" asp-route-alias="@Model.UserProfile.UserName"
+                          class="position-absolute top-0 end-0">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="tooltip"
+                                title="Blocking a user prevents them from seeing your profile. Sending a postcard will skip their account, and yours will be skipped when they send a postcard. Existing postcards can still be registered.">Block</button>
+                    </form>
                 }
                 <h5 class="card-title">About @Model.UserProfile.UserName...</h5>
                 <p class="card-text twemoji">@Model.UserProfile.ProfileDescription</p>
@@ -202,6 +216,10 @@
                 var btn = document.getElementById(tab + '-tab');
                 if (btn) bootstrap.Tab.getOrCreateInstance(btn).show();
             }
+
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                bootstrap.Tooltip.getOrCreateInstance(el);
+            });
         })();
     </script>
 }

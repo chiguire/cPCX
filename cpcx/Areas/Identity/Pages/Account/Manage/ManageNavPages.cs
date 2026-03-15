@@ -13,6 +13,7 @@ namespace  cpcx.Areas.Identity.Pages.Account.Manage
         public static string Email => "Email";
         public static string ChangePassword => "ChangePassword";
         public static string Avatar => "Avatar";
+        public static string BlockedUsers => "BlockedUsers";
         public static string DownloadPersonalData => "DownloadPersonalData";
         public static string DeletePersonalData => "DeletePersonalData";
         public static string ExternalLogins => "ExternalLogins";
@@ -22,6 +23,7 @@ namespace  cpcx.Areas.Identity.Pages.Account.Manage
         public static string EmailNavClass(ViewContext viewContext) => PageNavClass(viewContext, Email);
         public static string ChangePasswordNavClass(ViewContext viewContext) => PageNavClass(viewContext, ChangePassword);
         public static string AvatarNavClass(ViewContext viewContext) => PageNavClass(viewContext, Avatar);
+        public static string BlockedUsersNavClass(ViewContext viewContext) => PageNavClass(viewContext, BlockedUsers);
         public static string DownloadPersonalDataNavClass(ViewContext viewContext) => PageNavClass(viewContext, DownloadPersonalData);
         public static string DeletePersonalDataNavClass(ViewContext viewContext) => PageNavClass(viewContext, DeletePersonalData);
         public static string ExternalLoginsNavClass(ViewContext viewContext) => PageNavClass(viewContext, ExternalLogins);
