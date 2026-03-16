@@ -1,8 +1,11 @@
-﻿using cpcx.Data;
+﻿using System.Data;
+using cpcx.Data;
+using cpcx.Dto;
 using cpcx.Entities;
 using cpcx.Exceptions;
 using cpcx.Inputs;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace cpcx.Services
 {
@@ -18,7 +21,7 @@ namespace cpcx.Services
         Task SetEventOpen(Guid id, bool value);
         Task SetEventVenue(Guid id, string value);
         Task SetEventVisible(Guid id, bool value);
-        Task<string> GetNextEventPostcardId(Guid id);
+        Task<PostcardAllocation?> AllocatePostcardAsync(Guid eventId, Guid senderId);
         Task<List<Event>> GetAvailableEvents();
         Task<List<EventUser>> GetEventsJoinedByUser(Guid userId);
 
@@ -212,23 +215,32 @@ namespace cpcx.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<string> GetNextEventPostcardId(Guid id)
+        public async Task<PostcardAllocation?> AllocatePostcardAsync(Guid eventId, Guid senderId)
         {
-            var e = await GetEvent(id);
-            if (e == null)
+            var conn = (NpgsqlConnection)context.Database.GetDbConnection();
+            var shouldOpen = conn.State != ConnectionState.Open;
+            if (shouldOpen) await conn.OpenAsync();
+            try
             {
-                logger.LogError("Event {Event} not found", id);
-                throw new CPCXException(CPCXErrorCode.EventNotFound);
+                await using var cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT * FROM allocate_postcard(@p_event_id, @p_sender_id)";
+                cmd.Parameters.AddWithValue("p_event_id", NpgsqlTypes.NpgsqlDbType.Uuid, eventId);
+                cmd.Parameters.AddWithValue("p_sender_id", NpgsqlTypes.NpgsqlDbType.Uuid, senderId);
+
+                await using var reader = await cmd.ExecuteReaderAsync();
+                if (!await reader.ReadAsync())
+                    return null;
+
+                return new PostcardAllocation(
+                    PostcardId: reader.GetString(0),
+                    ReceiverUserId: reader.GetGuid(1),
+                    ReceiverAddress: reader.GetString(2)
+                );
             }
-
-            var nextPostcardId = e.LastPostcardId;
-
-            e.LastPostcardId += 1;
-
-            context.Events.Update(e);
-            await context.SaveChangesAsync();
-
-            return nextPostcardId.ToString();
+            finally
+            {
+                if (shouldOpen) await conn.CloseAsync();
+            }
         }
 
         public async Task<List<Event>> GetAvailableEvents()

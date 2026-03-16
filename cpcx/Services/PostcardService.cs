@@ -1,5 +1,6 @@
 ﻿using cpcx.Config;
 using cpcx.Data;
+using cpcx.Dto;
 using cpcx.Entities;
 using cpcx.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -26,29 +27,8 @@ namespace cpcx.Services
     {
         private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
 
-        // Serializes SendPostcard across all concurrent requests so the postcard ID
-        // counter read-modify-write and recipient selection are a single atomic unit.
-        private static readonly SemaphoreSlim _sendLock = new(1, 1);
-
         public async Task<Postcard> SendPostcard(CpcxUser u, Event e)
         {
-            await _sendLock.WaitAsync();
-            try
-            {
-                return await SendPostcardCore(u, e);
-            }
-            finally
-            {
-                _sendLock.Release();
-            }
-        }
-
-        private async Task<Postcard> SendPostcardCore(CpcxUser u, Event e)
-        {
-            // Reload the event so we see the latest LastPostcardId committed by
-            // a previous request that just released the lock.
-            await context.Entry(e).ReloadAsync();
-
             var eu = await context.EventUsers.FindAsync(e.Id, u.Id);
 
             if (eu == null)
@@ -71,78 +51,32 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.TravelingPostcardLimitReached);
             }
 
-            var chosenAddress = await GetAvailableAddress(u, e.Id);
+            var allocation = await eventService.AllocatePostcardAsync(e.Id, u.Id);
 
-            if (chosenAddress == null)
+            if (allocation == null)
             {
                 logger.LogWarning("No addresses available for postcard");
                 throw new CPCXException(CPCXErrorCode.NoAddressesFoundInEvent);
             }
 
-            if (chosenAddress.PriorityScore > 0)
-                chosenAddress.PriorityScore--;
+            var receiver = await context.Users.FindAsync(allocation.ReceiverUserId);
 
-            var postcardId = await eventService.GetNextEventPostcardId(e.Id);
-            
-            logger.LogInformation("User {Sender} will send a postcard to {Receiver} at {Address}, PCID {EPID}-{PCID}", u.UserName, chosenAddress.User.UserName, chosenAddress.Address, e.PublicId, postcardId);
+            logger.LogInformation("User {Sender} will send a postcard to {Receiver} at {Address}, PCID {EPID}-{PCID}", u.UserName, receiver?.UserName, allocation.ReceiverAddress, e.PublicId, allocation.PostcardId);
 
             var np = new Postcard
             {
                 Id = Guid.NewGuid(),
                 Event = e,
                 Sender = u,
-                Receiver = chosenAddress.User,
+                Receiver = receiver!,
                 SentOn = DateTime.UtcNow,
-                PostcardId = postcardId,
+                PostcardId = allocation.PostcardId,
             };
 
             context.Postcards.Add(np);
             await context.SaveChangesAsync();
 
             return np;
-        }
-
-        private async Task<EventUser?> GetAvailableAddress(CpcxUser u, Guid eventId)
-        {
-            var e = await eventService.GetEvent(eventId);
-            if (e == null)
-            {
-                logger.LogError("Event {Event} not found", eventId);
-                throw new CPCXException(CPCXErrorCode.EventNotFound);
-            }
-
-            if (await context.EventUsers.FindAsync(eventId, u.Id) == null)
-            {
-                logger.LogError("User {UserId} is not part of event {Event}", u.Id, eventId);
-                throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
-            }
-
-            var sender = await context.Users
-                .Include(x => x.BlockedUsers)
-                .FirstAsync(x => x.Id == u.Id);
-            var blockedByMeIds = sender.BlockedUsers?.Select(b => b.Id).ToHashSet() ?? [];
-
-            var blockedMeIds = await context.Users
-                .Where(other => other.BlockedUsers!.Any(b => b.Id == u.Id))
-                .Select(other => other.Id)
-                .ToHashSetAsync();
-
-            return await context.EventUsers
-                .Include(eu => eu.User)
-                .Where(eu =>
-                    // Postcards from THIS event
-                    eu.EventId == eventId &&
-                    // Recipient is active in THIS event
-                    eu.ActiveInEvent &&
-                    // Sender can't send a postcard to themselves
-                    eu.UserId != u.Id &&
-                    // Exclude users blocked by sender, and users who have blocked sender
-                    !blockedByMeIds.Contains(eu.UserId) &&
-                    !blockedMeIds.Contains(eu.UserId)
-                )
-                .OrderByDescending(eu => eu.PriorityScore)
-                .ThenBy(eu => EF.Functions.Random())
-                .FirstOrDefaultAsync();
         }
 
         public async Task<Postcard> RegisterPostcard(CpcxUser u, string publicEventId, string postcardId)

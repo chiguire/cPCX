@@ -117,5 +117,42 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         }
 
         await context.SaveChangesAsync(token);
+
+        await context.Database.ExecuteSqlRawAsync(@"
+            CREATE OR REPLACE FUNCTION allocate_postcard(p_event_id uuid, p_sender_id uuid)
+            RETURNS TABLE(postcard_id text, receiver_user_id uuid, receiver_address text)
+            LANGUAGE sql
+            AS $$
+                WITH
+                    recipient_selected AS (
+                        SELECT ""UserId"", ""Address""
+                        FROM ""EventUsers""
+                        WHERE ""EventId"" = p_event_id
+                          AND ""UserId"" != p_sender_id
+                          AND ""ActiveInEvent"" = true
+                          AND ""UserId"" NOT IN (SELECT ""BlockedUserId"" FROM ""UserBlocks"" WHERE ""BlockerId"" = p_sender_id)
+                          AND ""UserId"" NOT IN (SELECT ""BlockerId"" FROM ""UserBlocks"" WHERE ""BlockedUserId"" = p_sender_id)
+                        ORDER BY ""PriorityScore"" DESC, random()
+                        LIMIT 1
+                        FOR UPDATE SKIP LOCKED
+                    ),
+                    recipient_update AS (
+                        UPDATE ""EventUsers"" eu
+                        SET ""PriorityScore"" = GREATEST(eu.""PriorityScore"" - 1, 0)
+                        FROM recipient_selected rs
+                        WHERE eu.""UserId"" = rs.""UserId"" AND eu.""EventId"" = p_event_id
+                        RETURNING eu.""UserId"", eu.""Address""
+                    ),
+                    event_update AS (
+                        UPDATE ""Events""
+                        SET ""LastPostcardId"" = ""LastPostcardId"" + 1
+                        FROM recipient_update
+                        WHERE ""Events"".""Id"" = p_event_id
+                        RETURNING ""LastPostcardId"" - 1 AS pid
+                    )
+                SELECT e.pid::text, r.""UserId"", r.""Address""
+                FROM event_update e, recipient_update r;
+            $$;
+        ", cancellationToken: token);
     }
 }
