@@ -492,3 +492,10 @@ cpcx/Migrations/
 # Load test output
 reports/
 stats_*.txt
+
+# Terraform
+.terraform
+.terraform.lock.hcl
+deploy/secrets
+deploy/nginx_id_ed25519.pub
+deploy/nginx_id_ed25519

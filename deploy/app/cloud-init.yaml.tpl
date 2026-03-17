@@ -27,7 +27,7 @@ write_files:
       # HTTP — ACME challenge passthrough, redirect everything else to HTTPS
       server {
           listen 80;
-          server_name deerpost.cx www.deerpost.cx emf.deerpost.cx;
+          server_name ${apex_domain} ${www_domain} ${app_domain};
 
           location /.well-known/acme-challenge/ {
               root /var/www/certbot;
@@ -38,39 +38,39 @@ write_files:
           }
       }
 
-      # deerpost.cx — redirect to www
+      # ${apex_domain} — redirect to www
       server {
           listen 443 ssl;
-          server_name deerpost.cx;
+          server_name ${apex_domain};
 
-          ssl_certificate     /etc/letsencrypt/live/deerpost.cx/fullchain.pem;
-          ssl_certificate_key /etc/letsencrypt/live/deerpost.cx/privkey.pem;
+          ssl_certificate     /etc/letsencrypt/live/${apex_domain}/fullchain.pem;
+          ssl_certificate_key /etc/letsencrypt/live/${apex_domain}/privkey.pem;
 
-          return 301 https://www.deerpost.cx$request_uri;
+          return 301 https://${www_domain}$request_uri;
       }
 
-      # www.deerpost.cx — static site
+      # ${www_domain} — static site
       server {
           listen 443 ssl;
-          server_name www.deerpost.cx;
+          server_name ${www_domain};
 
-          ssl_certificate     /etc/letsencrypt/live/deerpost.cx/fullchain.pem;
-          ssl_certificate_key /etc/letsencrypt/live/deerpost.cx/privkey.pem;
+          ssl_certificate     /etc/letsencrypt/live/${apex_domain}/fullchain.pem;
+          ssl_certificate_key /etc/letsencrypt/live/${apex_domain}/privkey.pem;
 
           root  /var/www/deerpost;
           index index.html;
       }
 
-      # emf.deerpost.cx — reverse proxy, admin IP only
+      # ${app_domain} — reverse proxy, admin IP only
       server {
           listen 443 ssl;
-          server_name emf.deerpost.cx;
+          server_name ${app_domain};
 
-          ssl_certificate     /etc/letsencrypt/live/deerpost.cx/fullchain.pem;
-          ssl_certificate_key /etc/letsencrypt/live/deerpost.cx/privkey.pem;
+          ssl_certificate     /etc/letsencrypt/live/${apex_domain}/fullchain.pem;
+          ssl_certificate_key /etc/letsencrypt/live/${apex_domain}/privkey.pem;
 
           if ($admin_allowed = 0) {
-              return 302 https://www.deerpost.cx;
+              return 302 https://${www_domain};
           }
 
           location / {
@@ -88,6 +88,6 @@ runcmd:
   - nginx -t && systemctl enable nginx && systemctl start nginx
   - |
     certbot --nginx \
-      -d deerpost.cx -d www.deerpost.cx -d emf.deerpost.cx \
+      -d ${apex_domain} -d ${www_domain} -d ${app_domain} \
       --non-interactive --agree-tos -m ${certbot_email} || \
       echo "certbot failed — run manually after DNS propagation"
