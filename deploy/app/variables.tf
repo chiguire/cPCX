@@ -1,3 +1,14 @@
+variable "namecheap_username" {
+  description = "Namecheap account username (used as both UserName and ApiUser)."
+  type        = string
+}
+
+variable "namecheap_api_key" {
+  description = "Namecheap API key."
+  type        = string
+  sensitive   = true
+}
+
 variable "postgres_admin_password" {
   description = "Administrator password for the PostgreSQL server."
   type        = string

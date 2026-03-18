@@ -19,7 +19,21 @@ source "$SCRIPT_DIR/secrets"
 
 cd "$SCRIPT_DIR/app"
 
-terraform "$ACTION" -var="target_environments=[\"$ENV\"]"
+TF_VARS="-var=target_environments=[\"$ENV\"]"
+
+terraform init
+
+if [[ "$ACTION" == "apply" ]]; then
+  # Phase 1: apply the App Service first so its outbound IPs are known,
+  # which the PostgreSQL firewall rules depend on via for_each.
+  terraform apply -auto-approve -target=azurerm_linux_web_app.app $TF_VARS
+fi
+
+if [[ "$ACTION" == "apply" ]]; then
+  terraform apply -auto-approve $TF_VARS
+else
+  terraform plan $TF_VARS
+fi
 
 if [[ "$ACTION" == "apply" ]]; then
   APP_NAME="cpcx-${ENV}-app"
