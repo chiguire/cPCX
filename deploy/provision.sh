@@ -13,4 +13,5 @@ ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -K -i inventory.ini play
     -e "emf_allowed_cidrs=${EMF_ALLOWED_CIDRS}" \
     -e "postgres_db=${POSTGRES_DB}" \
     -e "postgres_user=${POSTGRES_USER}" \
-    -e "postgres_data_path=${POSTGRES_DATA_PATH}"
+    -e "postgres_data_path=${POSTGRES_DATA_PATH}" \
+    -e "compose_file=${COMPOSE_FILE}"
