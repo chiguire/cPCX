@@ -1,0 +1,62 @@
+events {}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    geo $emf_allowed {
+        default 0;
+        {% for cidr in emf_allowed_cidrs.split(',') %}
+        {{ cidr }} 1;
+        {% endfor %}
+    }
+
+    # Redirect all HTTP to HTTPS
+    server {
+        listen 80;
+        server_name www.deerpost.cx emf.deerpost.cx;
+        return 301 https://$host$request_uri;
+    }
+
+    # Static site — apex domain
+    server {
+        listen 443 ssl;
+        server_name www.deerpost.cx;
+
+        ssl_certificate     /etc/letsencrypt/live/www.deerpost.cx/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/www.deerpost.cx/privkey.pem;
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+
+        root  /usr/share/nginx/html;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ =404;
+        }
+    }
+
+    # Reverse proxy — emf subdomain → cpcx (allowlisted IPs only)
+    server {
+        listen 443 ssl;
+        server_name emf.deerpost.cx;
+
+        ssl_certificate     /etc/letsencrypt/live/emf.deerpost.cx/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/emf.deerpost.cx/privkey.pem;
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+
+        if ($emf_allowed = 0) {
+            return 302 https://www.deerpost.cx;
+        }
+
+        location / {
+            proxy_pass         http://cpcx:8080;
+            proxy_http_version 1.1;
+            proxy_set_header   Host              $host;
+            proxy_set_header   X-Real-IP         $remote_addr;
+            proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+        }
+    }
+}

@@ -1,0 +1,124 @@
+- hosts: vps
+  tasks:
+    - name: Update apt cache
+      become: true
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      become: true
+      apt:
+        name: [git, docker, ufw]
+        state: present
+
+    - name: Copy Github SSH private key to ~/.ssh
+      copy:
+        src: "{{ github_ssh_private_key_path }}"
+        dest: "~/.ssh/id_ed25519"
+        mode: '0600'
+
+    - name: Clone repository
+      git:
+        repo: "{{ github_repo }}"
+        dest: ~/app
+        version: release
+        accept_hostkey: yes
+        key_file: ~/.ssh/id_ed25519
+
+    - name: Render nginx config
+      template:
+        src: "{{ playbook_dir }}/../docker/nginx/nginx.conf.j2"
+        dest: ~/app/deploy/docker/nginx/nginx.conf
+
+    - name: Pull Docker images
+      community.docker.docker_image:
+        name: "{{ item }}"
+        source: pull
+      loop:
+        - postgres:17
+        - mcr.microsoft.com/dotnet/sdk:10.0
+        - mcr.microsoft.com/dotnet/aspnet:10.0-alpine
+        - nginx:alpine
+
+    - name: Generate postgres password
+      set_fact:
+        postgres_password: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+
+    - name: Write .env file
+      copy:
+        dest: ~/app/deploy/docker/.env
+        mode: '0600'
+        content: |
+          POSTGRES_DB={{ postgres_db }}
+          POSTGRES_USER={{ postgres_user }}
+          POSTGRES_PASSWORD={{ postgres_password }}
+          POSTGRES_DATA_PATH=~/postgres
+          CPCX_PROJECT_PATH=cpcx
+
+    - name: Ensure init-db.sh is executable
+      file:
+        path: ~/app/deploy/docker/init-db.sh
+        mode: '0700'
+
+    - name: Initialise database
+      shell:
+        cmd: ~/app/deploy/docker/init-db.sh InitialMigration
+        chdir: ~/app/deploy/docker
+
+    - name: Install snapd
+      become: true
+      apt:
+        name: snapd
+        state: present
+
+    - name: Install certbot via snap
+      become: true
+      community.general.snap:
+        name: certbot
+        classic: yes
+
+    - name: Create certbot symlink
+      become: true
+      file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        state: link
+
+    - name: Obtain SSL certificates
+      become: true
+      command: >
+        certbot certonly --standalone --non-interactive --agree-tos
+        --email {{ certbot_email }}
+        -d {{ domain_apex }}
+        -d {{ domain_emf }}
+      args:
+        creates:
+          - /etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem
+          - /etc/letsencrypt/live/{{ domain_emf }}/fullchain.pem
+        
+
+    - name: Schedule certbot renewal
+      cron:
+        name: certbot renew
+        minute: "30"
+        hour: "5"
+        job: certbot renew --quiet
+        user: root
+
+    - name: Open SSH, HTTP and HTTPS ports
+      become: true
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "22"
+        - "80"
+        - "443"
+
+    - name: Enable ufw
+      become: true
+      community.general.ufw:
+        state: enabled
+
+    
