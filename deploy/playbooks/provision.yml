@@ -5,6 +5,13 @@
       apt:
         update_cache: yes
 
+    - name: Uninstall nginx if present
+      become: true
+      apt:
+        name: nginx
+        state: absent
+        purge: yes
+
     - name: Install required packages
       become: true
       apt:
@@ -98,6 +105,14 @@
         force: true
         key_file: ~/.ssh/id_ed25519
 
+    - name: Empty Migrations directory
+      file:
+        path: ~/app/cpcx/Migrations
+        state: "{{ item }}"
+      loop:
+        - absent
+        - directory
+
     - name: Render nginx config
       template:
         src: "{{ playbook_dir }}/../docker/nginx/nginx.conf.j2"
@@ -129,14 +144,11 @@
           POSTGRES_DATA_PATH={{ postgres_data_path }}
           CPCX_PROJECT_PATH=cpcx
 
-    - name: Ensure postgres data directory is empty
+    - name: Delete postgres data directory
       become: true
       file:
         path: "{{ postgres_data_path }}"
-        state: "{{ item }}"
-      loop:
-        - absent
-        - directory
+        state: absent
 
     - name: Ensure init-db.sh is executable
       file:
