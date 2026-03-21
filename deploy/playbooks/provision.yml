@@ -8,8 +8,41 @@
     - name: Install required packages
       become: true
       apt:
-        name: [git, docker, ufw]
+        name: [git,
+               ufw, 
+               docker.io, docker-compose, uidmap,
+               python3-pip, python3-packaging, python3-requests]
         state: present
+
+    - name: Disable root Docker service and socket
+      become: true
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop:
+        - docker.service
+        - docker.socket
+
+    - name: Remove root Docker socket
+      become: true
+      file:
+        path: /var/run/docker.sock
+        state: absent
+
+    - name: Set up rootless Docker
+      shell: curl -fsSL https://get.docker.com/rootless | sh
+      environment:
+        XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
+
+    - name: Enable rootless Docker and start on boot
+      shell: systemctl --user enable --now docker
+      environment:
+        XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
+
+    - name: Enable linger so rootless Docker starts at boot
+      become: true
+      shell: loginctl enable-linger {{ ansible_user }}
 
     - name: Copy Github SSH private key to ~/.ssh
       copy:
@@ -23,6 +56,7 @@
         dest: ~/app
         version: release
         accept_hostkey: yes
+        force: true
         key_file: ~/.ssh/id_ed25519
 
     - name: Render nginx config
@@ -34,6 +68,7 @@
       community.docker.docker_image:
         name: "{{ item }}"
         source: pull
+        docker_host: "unix:///run/user/{{ ansible_user_uid }}/docker.sock"
       loop:
         - postgres:17
         - mcr.microsoft.com/dotnet/sdk:10.0
@@ -121,4 +156,35 @@
       community.general.ufw:
         state: enabled
 
-    
+    - name: Create user systemd directory
+      file:
+        path: ~/.config/systemd/user
+        state: directory
+        mode: '0755'
+
+    - name: Install cpcx user systemd service
+      copy:
+        dest: ~/.config/systemd/user/cpcx.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=CPCX Application (Docker Compose)
+          After=network.target docker.service
+
+          [Service]
+          Type=oneshot
+          RemainAfterExit=yes
+          WorkingDirectory=/home/{{ ansible_user }}/app/deploy/docker
+          EnvironmentFile=/home/{{ ansible_user }}/app/deploy/docker/.env
+          ExecStart=/usr/bin/docker-compose up -d --build
+          ExecStop=/usr/bin/docker-compose down
+
+          [Install]
+          WantedBy=default.target
+
+    - name: Enable and start cpcx user service
+      shell: |
+        systemctl --user daemon-reload
+        systemctl --user enable --now cpcx
+      environment:
+        XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}

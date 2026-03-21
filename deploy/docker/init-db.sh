@@ -32,7 +32,7 @@ REPO_ROOT=$(realpath "$(dirname "$0")/../..")
 # 1. Start postgres
 # ---------------------------------------------------------------------------
 echo "==> Starting postgres..."
-docker compose -p "$COMPOSE_PROJECT" -f docker-compose.dev.yml up -d postgres
+docker-compose -p "$COMPOSE_PROJECT" -f docker-compose.dev.yml up -d postgres
 
 # ---------------------------------------------------------------------------
 # 2. Wait for postgres to accept connections
@@ -66,6 +66,6 @@ docker run --rm \
   "
 
 echo "==> Taking down containers..."
-docker compose -p "$COMPOSE_PROJECT" -f docker-compose.dev.yml down
+docker-compose -p "$COMPOSE_PROJECT" -f docker-compose.dev.yml down
 
 echo "==> Done."

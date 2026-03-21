@@ -1,6 +1,9 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/bash
 
-ansible-playbook -K -i inventory.ini playbooks/provision.yml \
+# Assumes a brand new VM, with the minimum of a unprivileged user with SSH access from private key
+
+source ./secrets && \
+ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -K -i inventory.ini playbooks/provision.yml \
     -e "github_ssh_private_key_path=${GITHUB_SSH_PRIVATE_KEY_PATH}" \
     -e "github_repo=${GITHUB_REPO}" \
     -e "certbot_email=${CERTBOT_EMAIL}" \
