@@ -9,9 +9,48 @@
       become: true
       apt:
         name: [git,
-               ufw, 
-               docker.io, docker-compose, uidmap,
+               ufw,
+               uidmap,
+               ca-certificates,
+               curl,
                python3-pip, python3-packaging, python3-requests]
+        state: present
+
+    - name: Create /etc/apt/keyrings directory
+      become: true
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Docker GPG key
+      become: true
+      shell: curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Add Docker apt repository
+      become: true
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" \
+          > /etc/apt/sources.list.d/docker.list
+      args:
+        creates: /etc/apt/sources.list.d/docker.list
+
+    - name: Update apt cache after adding Docker repository
+      become: true
+      apt:
+        update_cache: yes
+
+    - name: Install Docker CE packages
+      become: true
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
         state: present
 
     - name: Disable root Docker service and socket
@@ -87,8 +126,17 @@
           POSTGRES_DB={{ postgres_db }}
           POSTGRES_USER={{ postgres_user }}
           POSTGRES_PASSWORD={{ postgres_password }}
-          POSTGRES_DATA_PATH=~/postgres
+          POSTGRES_DATA_PATH={{ postgres_data_path }}
           CPCX_PROJECT_PATH=cpcx
+
+    - name: Ensure postgres data directory is empty
+      become: true
+      file:
+        path: "{{ postgres_data_path }}"
+        state: "{{ item }}"
+      loop:
+        - absent
+        - directory
 
     - name: Ensure init-db.sh is executable
       file:
@@ -176,8 +224,8 @@
           RemainAfterExit=yes
           WorkingDirectory=/home/{{ ansible_user }}/app/deploy/docker
           EnvironmentFile=/home/{{ ansible_user }}/app/deploy/docker/.env
-          ExecStart=/usr/bin/docker-compose up -d --build
-          ExecStop=/usr/bin/docker-compose down
+          ExecStart=/usr/bin/docker compose up -d --build
+          ExecStop=/usr/bin/docker compose down
 
           [Install]
           WantedBy=default.target

@@ -1,4 +1,4 @@
-services:
+in provservices:
   postgres:
     image: postgres:17
     restart: unless-stopped
