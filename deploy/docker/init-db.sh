@@ -38,7 +38,7 @@ docker-compose -p "$COMPOSE_PROJECT" -f docker-compose.dev.yml up -d postgres
 # 2. Wait for postgres to accept connections
 # ---------------------------------------------------------------------------
 echo "==> Waiting for postgres to be ready..."
-until docker compose -p "$COMPOSE_PROJECT" -f docker-compose.dev.yml \
+until docker-compose -p "$COMPOSE_PROJECT" -f docker-compose.dev.yml \
     exec -T postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
     > /dev/null 2>&1; do
   sleep 1
@@ -61,6 +61,7 @@ docker run --rm \
     dotnet tool install --global dotnet-ef --version '10.*' 2>/dev/null || true
     export PATH=\"\$PATH:/root/.dotnet/tools\"
     cd /src
+    dotnet restore
     dotnet ef migrations add '${MIGRATION_NAME}' --project '${CPCX_PROJECT_PATH}'
     dotnet ef database update --project '${CPCX_PROJECT_PATH}'
   "
