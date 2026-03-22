@@ -5,17 +5,11 @@
       apt:
         update_cache: yes
 
-    - name: Uninstall nginx if present
-      become: true
-      apt:
-        name: nginx
-        state: absent
-        purge: yes
-
     - name: Install required packages
       become: true
       apt:
         name: [git,
+               nginx,
                ufw,
                uidmap,
                ca-certificates,
@@ -86,14 +80,6 @@
       environment:
         XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
 
-    - name: Allow unprivileged port binding from port 80
-      become: true
-      sysctl:
-        name: net.ipv4.ip_unprivileged_port_start
-        value: '80'
-        sysctl_file: /etc/sysctl.conf
-        reload: yes
-
     - name: Enable linger so rootless Docker starts at boot
       become: true
       shell: loginctl enable-linger {{ ansible_user }}
@@ -121,10 +107,12 @@
         - absent
         - directory
 
-    - name: Render nginx config
-      template:
-        src: "{{ playbook_dir }}/../docker/nginx/nginx.conf.j2"
-        dest: ~/app/deploy/docker/nginx/nginx.conf
+    - name: Copy html files to nginx web root
+      become: true
+      copy:
+        src: ~/app/deploy/docker/nginx/html/
+        dest: /var/www/html/
+        remote_src: yes
 
     - name: Pull Docker images
       community.docker.docker_image:
@@ -135,7 +123,6 @@
         - postgres:17
         - mcr.microsoft.com/dotnet/sdk:10.0
         - mcr.microsoft.com/dotnet/aspnet:10.0-alpine
-        - nginx:alpine
 
     - name: Generate postgres password
       set_fact:
@@ -190,7 +177,7 @@
     - name: Obtain SSL certificates
       become: true
       command: >
-        certbot certonly --standalone --non-interactive --agree-tos
+        certbot certonly --webroot -w /var/www/html --non-interactive --agree-tos
         --email {{ certbot_email }}
         -d {{ domain_apex }}
         -d {{ domain_emf }}
@@ -198,28 +185,18 @@
         creates:
           - /etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem
 
-    - name: Create ~/letsencrypt/live directories
-      file:
-        path: ~/letsencrypt/live/{{ item }}
-        state: directory
-        mode: '0755'
-      loop:
-        - "{{ domain_apex }}"
-
-    - name: Copy SSL certificates (dereference symlinks) and set ownership
+    - name: Render nginx config
       become: true
-      shell: |
-        cp -L /etc/letsencrypt/live/{{ item }}/*.pem /home/{{ ansible_user }}/letsencrypt/live/{{ item }}/
-      loop:
-        - "{{ domain_apex }}"
+      template:
+        src: "{{ playbook_dir }}/../docker/nginx/nginx.conf.j2"
+        dest: /etc/nginx/nginx.conf
 
-    - name: Chown letsencrypt copy to ansible_user
+    - name: Enable and reload nginx
       become: true
-      file:
-        path: /home/{{ ansible_user }}/letsencrypt
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        recurse: yes
+      systemd:
+        name: nginx
+        enabled: yes
+        state: reloaded
 
     - name: Schedule certbot renewal
       become: true
@@ -227,10 +204,7 @@
         name: certbot renew
         minute: "30"
         hour: "5"
-        job: >-
-          certbot renew --quiet &&
-          cp -L /etc/letsencrypt/live/{{ domain_apex }}/*.pem /home/{{ ansible_user }}/letsencrypt/live/{{ domain_apex }}/ &&
-          chown -R {{ ansible_user }}:{{ ansible_user }} /home/{{ ansible_user }}/letsencrypt
+        job: certbot renew --quiet
         user: root
 
     - name: Open SSH, HTTP and HTTPS ports
@@ -248,6 +222,14 @@
       become: true
       community.general.ufw:
         state: enabled
+
+    - name: Allow {{ ansible_user }} to start/stop nginx without password
+      become: true
+      copy:
+        dest: /etc/sudoers.d/{{ ansible_user }}-nginx
+        content: "{{ ansible_user }} ALL=(root) NOPASSWD: /usr/bin/systemctl start nginx, /usr/bin/systemctl stop nginx\n"
+        mode: '0440'
+        validate: /usr/sbin/visudo -cf %s
 
     - name: Create user systemd directory
       file:
@@ -270,6 +252,7 @@
           WorkingDirectory=/home/{{ ansible_user }}/app/deploy/docker
           EnvironmentFile=/home/{{ ansible_user }}/app/deploy/docker/.env
           ExecStart=/usr/bin/docker compose -f {{ compose_file }} up -d --build
+          ExecStartPost=/usr/bin/sudo /usr/bin/systemctl start nginx
           ExecStop=/usr/bin/docker compose -f {{ compose_file }} down
 
           [Install]
