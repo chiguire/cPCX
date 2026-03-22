@@ -198,11 +198,31 @@
         creates:
           - /etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem
           - /etc/letsencrypt/live/{{ domain_emf }}/fullchain.pem
-        
 
-    - name: Grant read access to /etc/letsencrypt for rootless Docker
+    - name: Create ~/letsencrypt/live directories
+      file:
+        path: ~/letsencrypt/live/{{ item }}
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ domain_apex }}"
+        - "{{ domain_emf }}"
+
+    - name: Copy SSL certificates (dereference symlinks) and set ownership
       become: true
-      shell: chmod -R o+rx /etc/letsencrypt
+      shell: |
+        cp -L /etc/letsencrypt/live/{{ item }}/*.pem /home/{{ ansible_user }}/letsencrypt/live/{{ item }}/
+      loop:
+        - "{{ domain_apex }}"
+        - "{{ domain_emf }}"
+
+    - name: Chown letsencrypt copy to ansible_user
+      become: true
+      file:
+        path: /home/{{ ansible_user }}/letsencrypt
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        recurse: yes
 
     - name: Schedule certbot renewal
       become: true
@@ -210,7 +230,11 @@
         name: certbot renew
         minute: "30"
         hour: "5"
-        job: certbot renew --quiet
+        job: >-
+          certbot renew --quiet &&
+          cp -L /etc/letsencrypt/live/{{ domain_apex }}/*.pem /home/{{ ansible_user }}/letsencrypt/live/{{ domain_apex }}/ &&
+          cp -L /etc/letsencrypt/live/{{ domain_emf }}/*.pem /home/{{ ansible_user }}/letsencrypt/live/{{ domain_emf }}/ &&
+          chown -R {{ ansible_user }}:{{ ansible_user }} /home/{{ ansible_user }}/letsencrypt
         user: root
 
     - name: Open SSH, HTTP and HTTPS ports

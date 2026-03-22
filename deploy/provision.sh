@@ -4,7 +4,7 @@
 # This script will delete ~/postgres and recreate the database with an initial migration
 
 source ./secrets && \
-ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -K -i inventory.ini playbooks/provision.yml \
+ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -v -K -i inventory.ini playbooks/provision.yml \
     -e "github_ssh_private_key_path=${GITHUB_SSH_PRIVATE_KEY_PATH}" \
     -e "github_repo=${GITHUB_REPO}" \
     -e "certbot_email=${CERTBOT_EMAIL}" \

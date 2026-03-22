@@ -40,7 +40,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/html:/usr/share/nginx/html:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ~/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - cpcx
     networks:
