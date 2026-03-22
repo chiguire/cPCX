@@ -110,7 +110,7 @@
     - name: Copy html files to nginx web root
       become: true
       copy:
-        src: ~/app/deploy/docker/nginx/html/
+        src: /home/{{ ansible_user }}/app/deploy/docker/nginx/html/
         dest: /var/www/html/
         remote_src: yes
 
