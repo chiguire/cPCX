@@ -197,7 +197,6 @@
       args:
         creates:
           - /etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem
-          - /etc/letsencrypt/live/{{ domain_emf }}/fullchain.pem
 
     - name: Create ~/letsencrypt/live directories
       file:
@@ -206,7 +205,6 @@
         mode: '0755'
       loop:
         - "{{ domain_apex }}"
-        - "{{ domain_emf }}"
 
     - name: Copy SSL certificates (dereference symlinks) and set ownership
       become: true
@@ -214,7 +212,6 @@
         cp -L /etc/letsencrypt/live/{{ item }}/*.pem /home/{{ ansible_user }}/letsencrypt/live/{{ item }}/
       loop:
         - "{{ domain_apex }}"
-        - "{{ domain_emf }}"
 
     - name: Chown letsencrypt copy to ansible_user
       become: true
@@ -233,7 +230,6 @@
         job: >-
           certbot renew --quiet &&
           cp -L /etc/letsencrypt/live/{{ domain_apex }}/*.pem /home/{{ ansible_user }}/letsencrypt/live/{{ domain_apex }}/ &&
-          cp -L /etc/letsencrypt/live/{{ domain_emf }}/*.pem /home/{{ ansible_user }}/letsencrypt/live/{{ domain_emf }}/ &&
           chown -R {{ ansible_user }}:{{ ansible_user }} /home/{{ ansible_user }}/letsencrypt
         user: root
 
