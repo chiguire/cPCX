@@ -86,6 +86,14 @@
       environment:
         XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
 
+    - name: Allow unprivileged port binding from port 80
+      become: true
+      sysctl:
+        name: net.ipv4.ip_unprivileged_port_start
+        value: '80'
+        sysctl_file: /etc/sysctl.conf
+        reload: yes
+
     - name: Enable linger so rootless Docker starts at boot
       become: true
       shell: loginctl enable-linger {{ ansible_user }}
@@ -191,6 +199,10 @@
           - /etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem
           - /etc/letsencrypt/live/{{ domain_emf }}/fullchain.pem
         
+
+    - name: Grant read access to /etc/letsencrypt for rootless Docker
+      become: true
+      shell: chmod -R o+rx /etc/letsencrypt
 
     - name: Schedule certbot renewal
       become: true

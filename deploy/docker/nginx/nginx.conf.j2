@@ -51,7 +51,9 @@ http {
         }
 
         location / {
-            proxy_pass         http://cpcx:8080;
+            resolver           127.0.0.11 valid=10s;
+            set $upstream      http://cpcx:8080;
+            proxy_pass         $upstream;
             proxy_http_version 1.1;
             proxy_set_header   Host              $host;
             proxy_set_header   X-Real-IP         $remote_addr;
