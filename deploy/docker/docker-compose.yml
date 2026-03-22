@@ -18,6 +18,8 @@ services:
       args:
         PROJECT_PATH: ${CPCX_PROJECT_PATH:-cpcx}
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
@@ -34,17 +36,13 @@ services:
   nginx:
     image: nginx:alpine
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+    network_mode: host
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/html:/usr/share/nginx/html:ro
       - ~/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - cpcx
-    networks:
-      - backend
 
 networks:
   backend:
