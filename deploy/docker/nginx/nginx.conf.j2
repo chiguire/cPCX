@@ -55,7 +55,7 @@ http {
         ssl_ciphers         HIGH:!aNULL:!MD5;
 
         if ($emf_allowed = 0) {
-            return 302 https://www.deerpost.cx;
+            return 302 https://www.deerpost.cx/?domain_redirected=true;
         }
 
         location / {

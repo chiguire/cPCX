@@ -1,5 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>deerpost.cx</title></head>
-<body>deerpost.cx</body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeerPost.cx Postcard Exchange Program</title>
+  <link rel="stylesheet" href="lib/css/bootstrap.min.css">
+  <style>
+    html, body {
+      height: 100%;
+    }
+  </style>
+</head>
+<body class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+  <div class="text-center" style="max-width: 600px;">
+    <h1 class="display-1 fw-bold mb-4">DeerPost.cx</h1>
+    <div id="redirected-notice" class="row mb-3" style="display:none!important">
+      <div class="col-lg">
+        <div class="alert alert-info rounded p-lg-3" role="alert">Have you been redirected to this page? You might need to join the internal wifi network to be able to access the full website.</div>
+      </div>
+    </div>
+    <div class="p-4 border rounded">
+      <p>DeerPost is a postcard exchange program for camp sites.</p>
+      <p>The fundamental idea is: for each postcard you send, you will receive one back from a random member in this event.</p>
+      <p class="mb-0">This website is heavily inspired by <a href="https://www.postcrossing.com/about">Postcrossing</a>,
+        which allows you to do the same with people from all over the world.
+        Please do join Postcrossing if you like sending and receiving postcards!</p>
+    </div>
+  </div>
+  <script src="lib/js/jquery.min.js"></script>
+  <script>
+    if (new URLSearchParams(window.location.search).get('domain_redirected') === 'true') {
+      $('#redirected-notice').show();
+    }
+  </script>
+</body>
 </html>
