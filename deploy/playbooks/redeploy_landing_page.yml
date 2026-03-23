@@ -1,0 +1,23 @@
+- hosts: vps
+  tasks:
+    - name: Checkout release branch
+      git:
+        repo: "{{ github_repo }}"
+        dest: ~/app
+        version: release
+        accept_hostkey: yes
+        force: true
+        key_file: ~/.ssh/id_ed25519
+
+    - name: Copy html files to nginx web root
+      become: true
+      copy:
+        src: /home/{{ ansible_user }}/app/deploy/docker/nginx/html/
+        dest: /var/www/html/
+        remote_src: yes
+
+    - name: Reload nginx
+      become: true
+      systemd:
+        name: nginx
+        state: reloaded

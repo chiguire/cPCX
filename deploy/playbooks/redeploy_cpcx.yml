@@ -1,0 +1,28 @@
+- hosts: vps
+  tasks:
+    - name: Checkout release branch
+      git:
+        repo: "{{ github_repo }}"
+        dest: ~/app
+        version: release
+        accept_hostkey: yes
+        force: true
+        key_file: ~/.ssh/id_ed25519
+
+    - name: Delete postgres data directory
+      become: true
+      file:
+        path: "{{ postgres_data_path }}"
+        state: absent
+      when: redeploy_db | default(false)
+
+    - name: Initialise database
+      shell:
+        cmd: ~/app/deploy/docker/init-db.sh InitialMigration
+        chdir: ~/app/deploy/docker
+      when: redeploy_db | default(false)
+
+    - name: Restart cpcx service
+      shell: systemctl --user restart cpcx
+      environment:
+        XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
