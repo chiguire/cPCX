@@ -114,9 +114,7 @@ namespace cpcx.Areas.Identity.Pages.Account
                     await _eventService.AddUser(mainEventId, user, "");
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    var publicId = await _mainEventService.GetMainEventPublicId();
-                    TempData["StatusMessage"] = $"{StatusMessageType.Info}%Please fill in your address as soon as possible so we know where to send your postcards!";
-                    return RedirectToPage("/Event/Index", new { area = "", eventPublicId = publicId });
+                    return RedirectToPage("/Onboarding/Index", new { area = "" });
                 }
                 foreach (var error in result.Errors)
                 {
