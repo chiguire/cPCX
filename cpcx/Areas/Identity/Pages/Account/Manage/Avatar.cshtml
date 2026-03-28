@@ -10,7 +10,7 @@
 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 <form id="avatar-form" method="post">
     <input type="hidden" id="SelectedAvatar" name="SelectedAvatar" value="@Model.CurrentAvatar" />
-    <div class="row row-cols-3 row-cols-md-6 g-3 mb-3">
+    <div class="row row-cols-4 row-cols-md-6 g-2 mb-3">
         @foreach (var avatar in Model.Avatars)
         {
             var isSelected = avatar == Model.CurrentAvatar;

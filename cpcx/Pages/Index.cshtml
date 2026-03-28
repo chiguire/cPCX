@@ -8,6 +8,30 @@
 
 <partial name="_StatusMessage" model="Model.StatusMessage" />
 
+@if (Model.IsManuallyInactive)
+{
+    <div class="row mb-3">
+        <div class="col-lg">
+            <div class="alert alert-warning rounded p-lg-3" role="alert">
+                You are currently marked as inactive and won't receive any new postcards.
+                You can reactivate yourself on the <a asp-page="/Event/Index" class="alert-link">event page</a>.
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.HasEmptyAddress)
+{
+    <div class="row mb-3">
+        <div class="col-lg">
+            <div class="alert alert-warning rounded p-lg-3" role="alert">
+                You don't have an address set for this event, so you are currently inactive and won't receive any postcards.
+                <a asp-page="/Onboarding/Index" class="alert-link">Complete your setup</a> to add one.
+            </div>
+        </div>
+    </div>
+}
+
 <div class="row g-4 align-items-start">
     @if (Model.CurrentUser is not null && Model.UserEventStats is not null)
     {

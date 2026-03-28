@@ -1,7 +1,7 @@
 @page
 @model cpcx.Pages.Onboarding.Index
 @{
-    ViewData["Title"] = "Welcome to DeerPost";
+    ViewData["Title"] = "Welcome to DeerPost!";
     string[] stepNames = ["Your Profile", "Your Address", "Your Avatar", "Your Email"];
 }
 
@@ -12,7 +12,7 @@
 
 @if (Model.Step == 1)
 {
-    <div class="row">
+    <div class="row g-4 align-items-start">
         <div class="col-md-6">
             <form method="post">
                 <input type="hidden" asp-for="Step" value="1" />
@@ -36,24 +36,41 @@
                 </div>
             </form>
         </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome to DeerPost!</h5>
+                    <p>DeerPost is a postcard exchange program running in EMF. Send and receive postcards back from random users signed up in the event. Use SneakerNet to post the postcards.</p>
+                    <p>This onboarding form will make sure you're ready to send and receive postcards. Your privacy is important, and we will delete all personal data after the event finishes.</p>
+                    <p class="mb-1">DeerPost encourages you to write a personal note in the postcard. Your <strong>profile description</strong> helps with that note. You might include:</p>
+                    <ul class="mb-0">
+                        <li>What you're doing at EMF</li>
+                        <li>What's something that you've enjoyed most at EMF</li>
+                        <li>Things you're into — projects, hobbies, fandoms</li>
+                        <li>Anything else that you want to say</li>
+                    </ul>
+                    <p>Please <strong>do not put your address in the profile</strong>, we will ask that in a moment.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     @section Scripts {
         <partial name="_ValidationScriptsPartial" />
         <script>
             function updateLength() {
-                const m = $("#Profile_ProfileDescription");
+                const m = $("#profileDescInput");
                 $("#ProfileLengthDisplay").text(m.val().length + "/3000");
             }
             $().ready(function () { updateLength(); });
-            $("#Profile_ProfileDescription").on("input", function () { updateLength(); });
+            $("#profileDescInput").on("input", function () { updateLength(); });
         </script>
     }
 }
 
 @if (Model.Step == 2)
 {
-    <div class="row">
+    <div class="row g-4 align-items-start">
         <div class="col-md-6">
             <form method="post">
                 <input type="hidden" asp-for="Step" value="2" />
@@ -74,6 +91,16 @@
                     <button type="submit" name="Skip" value="true" class="btn btn-outline-secondary">Skip</button>
                 </div>
             </form>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Your address at the event</h5>
+                    <p>DeerPost needs to know where you're camped so that whoever sends you a postcard knows where to deliver it. Be as specific as necessary: a zone, DK, or any landmark that helps someone find you.</p>
+                    <p>If you leave the event early or don't want to receive any more postcards, you can mark yourself as <strong>inactive</strong>. No new postcards will be assigned to you from that point on.</p>
+                    <p class="mb-0">Leaving your address empty has the same effect as being inactive. DeerPost won't be able to send postcards your way until you fill it in.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -115,7 +142,11 @@
     <form method="post">
         <input type="hidden" asp-for="Step" value="3" />
         <input type="hidden" id="SelectedAvatar" name="Avatar.SelectedAvatar" value="@Model.Avatar.SelectedAvatar" />
-        <div class="row row-cols-3 row-cols-md-6 g-3 mb-3">
+        <div class="d-flex gap-2 mb-3">
+            <button type="submit" class="btn btn-primary">Save &amp; Continue</button>
+            <button type="submit" name="Skip" value="true" class="btn btn-outline-secondary">Skip</button>
+        </div>
+        <div class="row row-cols-4 row-cols-md-6 g-2 mb-3">
             @foreach (var avatar in Model.Avatars)
             {
                 var isSelected = avatar == Model.Avatar.SelectedAvatar;
@@ -154,7 +185,7 @@
 
 @if (Model.Step == 4)
 {
-    <div class="row">
+    <div class="row g-4 align-items-start">
         <div class="col-md-6">
             <form method="post">
                 <input type="hidden" asp-for="Step" value="4" />
@@ -172,6 +203,19 @@
                     <button type="submit" name="Skip" value="true" class="btn btn-outline-secondary">Skip</button>
                 </div>
             </form>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Enter your email address</h5>
+                    <p>Your email address is entirely optional. Your email address is useful for:</p>
+                    <ul>
+                        <li><strong>Password reset:</strong> If you forget your password, we send a link to your email address to reset it.</li>
+                        <li><strong>Delivery notifications:</strong> When someone registers a postcard you sent, you can get a notification so you know it arrived. The postcard recipient can also send you a short note.</li>
+                    </ul>
+                    <p class="mb-0">Your email is never shown to other users.</p>
+                </div>
+            </div>
         </div>
     </div>
 

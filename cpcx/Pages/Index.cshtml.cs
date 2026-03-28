@@ -35,6 +35,8 @@ public class IndexModel : MessagePageModel
 
     public CpcxUser? CurrentUser { get; set; }
     public EventUser? UserEventStats { get; set; }
+    public bool HasEmptyAddress => UserEventStats is not null && string.IsNullOrEmpty(UserEventStats.Address);
+    public bool IsManuallyInactive => UserEventStats is not null && !string.IsNullOrEmpty(UserEventStats.Address) && !UserEventStats.ActiveInEvent;
     public List<Entities.Postcard> TravellingPostcards { get; set; } = [];
     public int MaxTravellingPostcards => _maxTravellingPostcards;
 
