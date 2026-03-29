@@ -115,7 +115,16 @@
                             {
                                 <tr>
                                     <td><a asp-page="/Postcard/Index" asp-route-postcardId="@p.FullPostCardId">@p.FullPostCardId</a></td>
-                                    <td><a asp-page="/User/Index" asp-route-alias="@p.Receiver.UserName">@p.Receiver.UserName</a></td>
+                                    <td>
+                                        @if (p.Receiver.IsDeleted)
+                                        {
+                                            <span>&lt;removed&gt;</span>
+                                        }
+                                        else
+                                        {
+                                            <a asp-page="/User/Index" asp-route-alias="@p.Receiver.UserName">@p.Receiver.UserName</a>
+                                        }
+                                    </td>
                                     <td>@p.SentOn.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                     <td>
                                         @if (p.ReceivedOn.HasValue && p.ReceivedOn != DateTime.UnixEpoch)
@@ -170,7 +179,16 @@
                             {
                                 <tr>
                                     <td><a asp-page="/Postcard/Index" asp-route-postcardId="@p.FullPostCardId">@p.FullPostCardId</a></td>
-                                    <td><a asp-page="/User/Index" asp-route-alias="@p.Sender.UserName">@p.Sender.UserName</a></td>
+                                    <td>
+                                        @if (p.Sender.IsDeleted)
+                                        {
+                                            <span>&lt;removed&gt;</span>
+                                        }
+                                        else
+                                        {
+                                            <a asp-page="/User/Index" asp-route-alias="@p.Sender.UserName">@p.Sender.UserName</a>
+                                        }
+                                    </td>
                                     <td>@p.SentOn.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                     <td>
                                         @if (p.ReceivedOn.HasValue && p.ReceivedOn != DateTime.UnixEpoch)

@@ -41,7 +41,7 @@ public class Index(
         var mainEventId = await mainEventService.GetMainEventId();
         var us = await userManager.FindByNameAsync(alias);
 
-        if (us == null)
+        if (us == null || us.IsDeleted)
         {
             SetStatusMessage($"User {alias} not found", StatusMessageType.Info);
             return RedirectToPage("/Index");

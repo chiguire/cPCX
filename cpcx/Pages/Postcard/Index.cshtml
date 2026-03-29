@@ -6,8 +6,8 @@
 
 @{
     ViewData["Title"] = $"Postcard {Model.PostcardId}";
-    
-    ViewData["Pronouns"] = (Model.Postcard.Receiver.Pronouns != Pronoun.Empty ? $" ({Model.Postcard.Receiver.Pronouns.GetDescription()})" : "");
+
+    ViewData["Pronouns"] = (!Model.Postcard.Receiver.IsDeleted && Model.Postcard.Receiver.Pronouns != Pronoun.Empty ? $" ({Model.Postcard.Receiver.Pronouns.GetDescription()})" : "");
 }
 
 <div>
@@ -44,7 +44,16 @@
         <div class="container">
             <div class="row align-content-start">
                 <div class="col">
-                    <h3><a asp-area="" asp-page="/User/Index" asp-route-alias="@Model.Postcard.Sender.UserName">@Model.Postcard.Sender.UserName</a></h3>
+                    <h3>
+                        @if (Model.Postcard.Sender.IsDeleted)
+                        {
+                            <span>&lt;removed&gt;</span>
+                        }
+                        else
+                        {
+                            <a asp-area="" asp-page="/User/Index" asp-route-alias="@Model.Postcard.Sender.UserName">@Model.Postcard.Sender.UserName</a>
+                        }
+                    </h3>
                     <p><i class="bx bx-export text-danger"></i> @Model.Postcard.SentOn.ToString("f", CultureInfo.CreateSpecificCulture("en-GB"))</p>
                 </div>
                 <div class="col text-center align-content-center">
@@ -52,7 +61,16 @@
                     <hr />
                 </div>
                 <div class="col">
-                    <h3><a asp-area="" asp-page="/User/Index" asp-route-alias="@Model.Postcard.Receiver.UserName">@Model.Postcard.Receiver.UserName</a></h3>
+                    <h3>
+                        @if (Model.Postcard.Receiver.IsDeleted)
+                        {
+                            <span>&lt;removed&gt;</span>
+                        }
+                        else
+                        {
+                            <a asp-area="" asp-page="/User/Index" asp-route-alias="@Model.Postcard.Receiver.UserName">@Model.Postcard.Receiver.UserName</a>
+                        }
+                    </h3>
                     <p><i class="bx bx-import text-info"></i> @Model.Postcard.ReceivedOn?.ToString("f", CultureInfo.CreateSpecificCulture("en-GB"))</p>
                 </div>
             </div>

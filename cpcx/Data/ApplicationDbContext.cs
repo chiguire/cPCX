@@ -125,13 +125,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             AS $$
                 WITH
                     recipient_selected AS (
-                        SELECT ""UserId"", ""Address""
-                        FROM ""EventUsers""
-                        WHERE ""EventId"" = p_event_id
-                          AND ""UserId"" != p_sender_id
-                          AND ""ActiveInEvent"" = true
-                          AND ""UserId"" NOT IN (SELECT ""BlockedUserId"" FROM ""UserBlocks"" WHERE ""BlockerId"" = p_sender_id)
-                          AND ""UserId"" NOT IN (SELECT ""BlockerId"" FROM ""UserBlocks"" WHERE ""BlockedUserId"" = p_sender_id)
+                        SELECT eu.""UserId"", eu.""Address""
+                        FROM ""EventUsers"" eu
+                        JOIN ""AspNetUsers"" u ON u.""Id"" = eu.""UserId""
+                        WHERE eu.""EventId"" = p_event_id
+                          AND eu.""UserId"" != p_sender_id
+                          AND eu.""ActiveInEvent"" = true
+                          AND u.""IsDeleted"" = false
+                          AND eu.""UserId"" NOT IN (SELECT ""BlockedUserId"" FROM ""UserBlocks"" WHERE ""BlockerId"" = p_sender_id)
+                          AND eu.""UserId"" NOT IN (SELECT ""BlockerId"" FROM ""UserBlocks"" WHERE ""BlockedUserId"" = p_sender_id)
                         ORDER BY ""PriorityScore"" DESC, random()
                         LIMIT 1
                         FOR UPDATE SKIP LOCKED

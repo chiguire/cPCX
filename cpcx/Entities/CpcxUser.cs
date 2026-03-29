@@ -16,4 +16,5 @@ public class CpcxUser : IdentityUser<Guid>
     
     public DateTime DeactivatedDate { get; set; } = DateTime.UnixEpoch;
     public DateTime BlockedUntilDate { get; set; } = DateTime.UnixEpoch;
+    public bool IsDeleted { get; set; } = false;
 }

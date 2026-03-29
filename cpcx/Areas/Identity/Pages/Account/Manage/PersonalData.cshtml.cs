@@ -139,14 +139,45 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            var result = await userManager.DeleteAsync(user);
+            var anonymizedName = $"deleted_{user.Id}";
+            user.UserName = anonymizedName;
+            user.NormalizedUserName = anonymizedName.ToUpperInvariant();
+            user.Email = $"{anonymizedName}@deleted.invalid";
+            user.NormalizedEmail = $"{anonymizedName}@deleted.invalid".ToUpperInvariant();
+            user.PhoneNumber = null;
+            user.ProfileDescription = "";
+            user.AvatarPath = "";
+            user.Pronouns = Pronoun.Empty;
+            user.IsDeleted = true;
+            await userManager.UpdateSecurityStampAsync(user);
+
+            var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException("Unexpected error deleting user.");
+                throw new InvalidOperationException("Unexpected error anonymizing user.");
             }
 
+            var eventUsers = await dbContext.EventUsers.Where(eu => eu.UserId == user.Id).ToListAsync();
+            foreach (var eu in eventUsers)
+            {
+                eu.Address = "";
+                eu.ActiveInEvent = false;
+            }
+
+            // Auto-register any travelling postcards sent to this user
+            var travellingToUser = await dbContext.Postcards
+                .Where(p => p.Receiver.Id == user.Id &&
+                            (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch))
+                .ToListAsync();
+            foreach (var p in travellingToUser)
+            {
+                p.ReceivedOn = DateTime.UtcNow;
+            }
+
+            await dbContext.SaveChangesAsync();
+
             await signInManager.SignOutAsync();
-            logger.LogInformation("User with ID '{UserId}' deleted their account.", userManager.GetUserId(User));
+            logger.LogInformation("User with ID '{UserId}' deleted their account.", user.Id);
 
             return Redirect("~/");
         }
