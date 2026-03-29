@@ -7,7 +7,6 @@ using cpcx.Entities;
 using cpcx.Config;
 using cpcx.Controllers;
 using cpcx.Infrastructure;
-using cpcx.Middleware;
 using cpcx.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,8 +15,6 @@ builder.Services.Configure<CpcxConfig>(
     builder.Configuration.GetSection(CpcxConfig.Cpcx));
 builder.Services.Configure<PostcardConfig>(
      builder.Configuration.GetSection(PostcardConfig.Postcard));
-builder.Services.Configure<IpAllowlistConfig>(
-    builder.Configuration.GetSection(IpAllowlistConfig.IpAllowlist));
 builder.Services.Configure<SmtpConfig>(
     builder.Configuration.GetSection(SmtpConfig.Smtp));
 builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, SmtpEmailSender>();
@@ -86,8 +83,6 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseMiddleware<IpAllowlistMiddleware>();
-
 app.UseRouting();
 
 app.UseRateLimiter();
