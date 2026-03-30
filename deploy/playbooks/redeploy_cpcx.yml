@@ -9,18 +9,35 @@
         force: true
         key_file: ~/.ssh/id_ed25519
 
+    - name: Stop cpcx service
+      shell: systemctl --user stop cpcx
+      environment:
+        XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
+
     - name: Delete postgres data directory
       become: true
       file:
         path: "{{ postgres_data_path }}"
         state: absent
-      when: redeploy_db | default(false)
+      when: redeploy_db | default(false) | bool
+
+    - name: Delete migrations directory
+      file:
+        path: ~/app/cpcx/Migrations
+        state: absent
+      when: redeploy_db | default(false) | bool
+
+    - name: Ensure init-db.sh is executable
+      file:
+        path: ~/app/deploy/docker/init-db.sh
+        mode: u+x
+      when: redeploy_db | default(false) | bool
 
     - name: Initialise database
       shell:
         cmd: ~/app/deploy/docker/init-db.sh InitialMigration
         chdir: ~/app/deploy/docker
-      when: redeploy_db | default(false)
+      when: redeploy_db | default(false) | bool
 
     - name: Restart cpcx service
       shell: systemctl --user restart cpcx
