@@ -7,6 +7,7 @@ using cpcx.Entities;
 using cpcx.Config;
 using cpcx.Controllers;
 using cpcx.Infrastructure;
+using cpcx.Middleware;
 using cpcx.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,7 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IPostcardService, PostcardService>();
 builder.Services.AddSingleton<MainEventService>();
 builder.Services.AddSingleton<IAvatarService, AvatarService>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -88,6 +90,7 @@ app.UseRouting();
 app.UseRateLimiter();
 
 app.UseAuthorization();
+app.UseMiddleware<UserStatusMiddleware>();
 
 app.MapRazorPages();
 app.MapControllers();
