@@ -43,9 +43,3 @@
       shell: systemctl --user restart cpcx
       environment:
         XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
-
-    - name: Reload nginx
-      become: true
-      service:
-        name: nginx
-        state: reloaded
