@@ -15,13 +15,17 @@ var appConfig = new ConfigurationBuilder()
 
 ApplicationDbContext CreateDb(string connection)
 {
-    if (string.IsNullOrWhiteSpace(connection))
+    var resolved = !string.IsNullOrWhiteSpace(connection) ? connection
+        : Environment.GetEnvironmentVariable("CPCX_CONNECTION_STRING")
+          ?? appConfig.GetConnectionString("DefaultConnection")
+          ?? "";
+    if (string.IsNullOrWhiteSpace(resolved))
     {
         Console.Error.WriteLine("No connection string provided. Use --connection or set CPCX_CONNECTION_STRING.");
         Environment.Exit(1);
     }
     var opts = new DbContextOptionsBuilder<ApplicationDbContext>()
-        .UseNpgsql(connection)
+        .UseNpgsql(resolved)
         .Options;
     return new ApplicationDbContext(opts, new ConfigurationBuilder().Build());
 }
@@ -70,10 +74,6 @@ var root = new RootCommand("cpcxcli — DeerPost.cx database administration");
 var connectionOpt = new Option<string>(
     "--connection",
     "PostgreSQL connection string. Falls back to CPCX_CONNECTION_STRING env var, then appsettings.json.");
-connectionOpt.SetDefaultValueFactory(() =>
-    Environment.GetEnvironmentVariable("CPCX_CONNECTION_STRING")
-    ?? appConfig.GetConnectionString("DefaultConnection")
-    ?? "");
 root.AddGlobalOption(connectionOpt);
 
 // ── event commands ────────────────────────────────────────────────────────────

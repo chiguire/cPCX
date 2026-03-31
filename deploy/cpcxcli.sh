@@ -3,8 +3,7 @@
 # Example: ./cpcxcli.sh user block alice --for 2h30m
 set -euo pipefail
 
-COMPOSE_PROJECT=cpcx
-NETWORK=${COMPOSE_PROJECT}_backend
+NETWORK=backend
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 REPO_ROOT=$(realpath "$SCRIPT_DIR/..")
