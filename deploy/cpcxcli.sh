@@ -3,7 +3,7 @@
 # Example: ./cpcxcli.sh user block alice --for 2h30m
 set -euo pipefail
 
-NETWORK=backend
+NETWORK=docker_backend
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 REPO_ROOT=$(realpath "$SCRIPT_DIR/..")
