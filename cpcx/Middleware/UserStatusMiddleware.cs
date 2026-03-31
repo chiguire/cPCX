@@ -21,8 +21,8 @@ public class UserStatusMiddleware(RequestDelegate next, TimeProvider timeProvide
 
             if (user != null)
             {
-                var now = timeProvider.GetUtcNow().UtcDateTime;
-                if (user.DeactivatedDate != DateTime.UnixEpoch || user.BlockedUntilDate > now)
+                var now = timeProvider.GetUtcNow();
+                if (user.DeactivatedDate != DateTimeOffset.UnixEpoch || user.BlockedUntilDate > now)
                 {
                     context.Response.Redirect("/Restricted");
                     return;

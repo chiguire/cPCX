@@ -56,7 +56,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         var hasher = new PasswordHasher<CpcxUser>();
         var devpassword = hasher.HashPassword(null!, "devpassword");
-        var eventStart = new DateTime(year: 2026, month: 7, day: 15, hour: 0, minute: 45, second: 0, kind: DateTimeKind.Utc);
+        var eventStart = new DateTimeOffset(year: 2026, month: 7, day: 15, hour: 0, minute: 45, second: 0, offset: TimeSpan.Zero);
 
         var initialEvent = new Event
         {

@@ -20,7 +20,8 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
         SignInManager<CpcxUser> signInManager,
         ILogger<PersonalDataModel> logger,
         ApplicationDbContext dbContext,
-        IOptionsSnapshot<PostcardConfig> postcardConfig) : PageModel
+        IOptionsSnapshot<PostcardConfig> postcardConfig,
+        TimeProvider timeProvider) : PageModel
     {
         private const string RequiredPhrase = "Delete my account";
 
@@ -72,7 +73,7 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             }
 
             // Postcards
-            var expiryThreshold = DateTime.UtcNow.AddHours(-postcardConfig.Value.PostcardExpirationTimeInHours);
+            var expiryThreshold = timeProvider.GetUtcNow().AddHours(-postcardConfig.Value.PostcardExpirationTimeInHours);
 
             var sentPostcards = await dbContext.Postcards
                 .Include(p => p.Event)
@@ -167,11 +168,11 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             // Auto-register any travelling postcards sent to this user
             var travellingToUser = await dbContext.Postcards
                 .Where(p => p.Receiver.Id == user.Id &&
-                            (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch))
+                            (p.ReceivedOn == null || p.ReceivedOn == DateTimeOffset.UnixEpoch))
                 .ToListAsync();
             foreach (var p in travellingToUser)
             {
-                p.ReceivedOn = DateTime.UtcNow;
+                p.ReceivedOn = timeProvider.GetUtcNow();
             }
 
             await dbContext.SaveChangesAsync();
@@ -182,9 +183,9 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             return Redirect("~/");
         }
 
-        private static string FormatRegisteredOn(Postcard p, DateTime expiryThreshold)
+        private static string FormatRegisteredOn(Postcard p, DateTimeOffset expiryThreshold)
         {
-            if (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch)
+            if (p.ReceivedOn == null || p.ReceivedOn == DateTimeOffset.UnixEpoch)
                 return p.IsExpired(expiryThreshold) ? "expired" : "";
             return p.ReceivedOn.Value.ToString("o");
         }

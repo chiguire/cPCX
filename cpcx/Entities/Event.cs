@@ -14,7 +14,7 @@ namespace cpcx.Entities
         [MaxLength(150)] public string Venue { get; set; } = null!;
         public bool Visible { get; set; } = true;
         public bool Open { get; set; } = false;
-        public DateTime Start { get; set; }
-        public DateTime End { get; set; }
+        public DateTimeOffset Start { get; set; }
+        public DateTimeOffset End { get; set; }
     }
 }

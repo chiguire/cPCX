@@ -126,8 +126,8 @@ root.AddCommand(eventCmd);
     {
         await using var db = CreateDb(conn);
         var e = await ResolveEvent(db, ev);
-        e.Start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
-        e.End   = DateTime.SpecifyKind(end,   DateTimeKind.Utc);
+        e.Start = new DateTimeOffset(DateTime.SpecifyKind(start, DateTimeKind.Utc));
+        e.End   = new DateTimeOffset(DateTime.SpecifyKind(end,   DateTimeKind.Utc));
         await db.SaveChangesAsync();
         Console.WriteLine($"[OK] {e.PublicId} ({e.Name}): {e.Start:u} — {e.End:u}");
     }, connectionOpt, evOpt, startOpt, endOpt);
@@ -151,10 +151,10 @@ root.AddCommand(userCmd);
         await using var db = CreateDb(conn);
         var user = await ResolveUser(db, username);
         user.BlockedUntilDate = forDur is not null
-            ? DateTime.UtcNow.Add(ParseDuration(forDur))
-            : DateTime.MaxValue;
+            ? DateTimeOffset.UtcNow.Add(ParseDuration(forDur))
+            : DateTimeOffset.MaxValue;
         await db.SaveChangesAsync();
-        var until = user.BlockedUntilDate == DateTime.MaxValue
+        var until = user.BlockedUntilDate == DateTimeOffset.MaxValue
             ? "indefinitely"
             : $"until {user.BlockedUntilDate:u} UTC";
         Console.WriteLine($"[OK] '{username}' blocked {until}.");
@@ -171,7 +171,7 @@ root.AddCommand(userCmd);
     {
         await using var db = CreateDb(conn);
         var user = await ResolveUser(db, username);
-        user.BlockedUntilDate = DateTime.UnixEpoch;
+        user.BlockedUntilDate = DateTimeOffset.UnixEpoch;
         await db.SaveChangesAsync();
         Console.WriteLine($"[OK] '{username}' unblocked.");
     }, connectionOpt, usernameArg);
@@ -187,7 +187,7 @@ root.AddCommand(userCmd);
     {
         await using var db = CreateDb(conn);
         var user = await ResolveUser(db, username);
-        user.DeactivatedDate = DateTime.UtcNow;
+        user.DeactivatedDate = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync();
         Console.WriteLine($"[OK] '{username}' deactivated.");
     }, connectionOpt, usernameArg);
@@ -203,7 +203,7 @@ root.AddCommand(userCmd);
     {
         await using var db = CreateDb(conn);
         var user = await ResolveUser(db, username);
-        user.DeactivatedDate = DateTime.UnixEpoch;
+        user.DeactivatedDate = DateTimeOffset.UnixEpoch;
         await db.SaveChangesAsync();
         Console.WriteLine($"[OK] '{username}' reactivated.");
     }, connectionOpt, usernameArg);

@@ -9,8 +9,8 @@ namespace cpcx.Entities
         public Guid Id { get; set; }
 
         public Event Event { get; init; } = null!;
-        public required DateTime SentOn {  get; set; }
-        public DateTime? ReceivedOn { get; set; }
+        public required DateTimeOffset SentOn {  get; set; }
+        public DateTimeOffset? ReceivedOn { get; set; }
         public CpcxUser Sender { get; init; } = null!;
         public CpcxUser Receiver { get; init; } = null!;
         
@@ -19,6 +19,6 @@ namespace cpcx.Entities
 
         public string FullPostCardId => $"{Event.PublicId}-{PostcardId}";
 
-        public bool IsExpired(DateTime postcardExpiredTime) => SentOn <= postcardExpiredTime;
+        public bool IsExpired(DateTimeOffset postcardExpiredTime) => SentOn <= postcardExpiredTime;
     }
 }

@@ -11,7 +11,8 @@ namespace cpcx.Pages.Postcard;
 public class Travelling(UserManager<CpcxUser> userManager,
                         IPostcardService postcardService,
                         IOptionsSnapshot<PostcardConfig> postcardConfig,
-                        MainEventService mainEventService) : MessagePageModel
+                        MainEventService mainEventService,
+                        TimeProvider timeProvider) : MessagePageModel
 {
     private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
 
@@ -21,14 +22,14 @@ public class Travelling(UserManager<CpcxUser> userManager,
     
     public int MaxTravellingPostcardsCount { get; set; }
     
-    public DateTime PostcardExpiredTime { get; set; }
+    public DateTimeOffset PostcardExpiredTime { get; set; }
     
     public async Task<ActionResult> OnGet()
     {
         var us = await userManager.GetUserAsync(User);
         var evId = await mainEventService.GetMainEventId();
         var postcards = await postcardService.GetTravellingPostcards(us!.Id, evId, includeExpired: true);
-        var currentDateTime = DateTime.UtcNow;
+        var currentDateTime = timeProvider.GetUtcNow();
         PostcardExpiredTime = currentDateTime.AddHours(-_postcardConfig.PostcardExpirationTimeInHours);
 
         Postcards = postcards;

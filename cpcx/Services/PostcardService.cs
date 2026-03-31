@@ -23,7 +23,8 @@ namespace cpcx.Services
         ApplicationDbContext context,
         IEventService eventService,
         IOptionsSnapshot<PostcardConfig> postcardConfig,
-        ILogger<PostcardService> logger) : IPostcardService
+        ILogger<PostcardService> logger,
+        TimeProvider timeProvider) : IPostcardService
     {
         private readonly PostcardConfig _postcardConfig = postcardConfig.Value;
 
@@ -37,12 +38,12 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
             }
 
-            var postcardExpiredTime = DateTime.UtcNow.AddHours(-_postcardConfig.PostcardExpirationTimeInHours);
+            var postcardExpiredTime = timeProvider.GetUtcNow().AddHours(-_postcardConfig.PostcardExpirationTimeInHours);
             var travellingCount = await context.Postcards.CountAsync(p =>
                 p.Sender.Id == u.Id &&
                 p.Event.Id == e.Id &&
                 p.SentOn > postcardExpiredTime &&
-                (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch)
+                (p.ReceivedOn == null || p.ReceivedOn == DateTimeOffset.UnixEpoch)
             );
 
             if (travellingCount >= _postcardConfig.MaxTravellingPostcards)
@@ -69,7 +70,7 @@ namespace cpcx.Services
                 Event = e,
                 Sender = u,
                 Receiver = receiver!,
-                SentOn = DateTime.UtcNow,
+                SentOn = timeProvider.GetUtcNow(),
                 PostcardId = allocation.PostcardId,
             };
 
@@ -124,7 +125,7 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.Unknown);
             }
             
-            postcardToRegister.ReceivedOn = DateTime.UtcNow;
+            postcardToRegister.ReceivedOn = timeProvider.GetUtcNow();
             senderEu.PostcardsSent += 1;
             senderEu.PriorityScore++;
             receiverEu.PostcardsReceived += 1;
@@ -178,7 +179,7 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.EventUserNotJoined);
             }
         
-            var currentDateTime = DateTime.UtcNow;
+            var currentDateTime = timeProvider.GetUtcNow();
             // Postcards sent before this time are considered expired
             var postcardExpiredTime = currentDateTime.AddHours(-_postcardConfig.PostcardExpirationTimeInHours);
 
@@ -195,7 +196,7 @@ namespace cpcx.Services
                     // Duplicate p.IsExpired here because of EF limitations
                     (includeExpired || p.SentOn > postcardExpiredTime) &&
                     // Postcard hasn't been registered yet
-                    (p.ReceivedOn == null || p.ReceivedOn == DateTime.UnixEpoch)
+                    (p.ReceivedOn == null || p.ReceivedOn == DateTimeOffset.UnixEpoch)
                 ).ToListAsync();
         
             return travellingPostcards;
@@ -207,7 +208,7 @@ namespace cpcx.Services
                 .Include(p => p.Event)
                 .Include(p => p.Receiver)
                 .Where(p => p.Sender.Id == userId && p.Event.Id == eventId &&
-                            p.ReceivedOn != null && p.ReceivedOn != DateTime.UnixEpoch)
+                            p.ReceivedOn != null && p.ReceivedOn != DateTimeOffset.UnixEpoch)
                 .OrderByDescending(p => p.SentOn);
 
             var total = await query.CountAsync();
@@ -221,7 +222,7 @@ namespace cpcx.Services
                 .Include(p => p.Event)
                 .Include(p => p.Sender)
                 .Where(p => p.Receiver.Id == userId && p.Event.Id == eventId &&
-                            p.ReceivedOn != null && p.ReceivedOn != DateTime.UnixEpoch)
+                            p.ReceivedOn != null && p.ReceivedOn != DateTimeOffset.UnixEpoch)
                 .OrderByDescending(p => p.SentOn);
 
             var total = await query.CountAsync();

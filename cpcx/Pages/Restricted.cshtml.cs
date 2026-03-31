@@ -15,7 +15,7 @@ public class RestrictedModel(
 {
     public bool IsDeactivated { get; private set; }
     public bool IsBlocked { get; private set; }
-    public DateTime? BlockedUntil { get; private set; }
+    public DateTimeOffset? BlockedUntil { get; private set; }
     public string CaretakerEmail => cpcxConfig.Value.CaretakerEmail;
 
     public async Task<IActionResult> OnGetAsync()
@@ -31,10 +31,10 @@ public class RestrictedModel(
             return RedirectToPage("/Index");
         }
 
-        var now = timeProvider.GetUtcNow().UtcDateTime;
-        IsDeactivated = user.DeactivatedDate != DateTime.UnixEpoch;
+        var now = timeProvider.GetUtcNow();
+        IsDeactivated = user.DeactivatedDate != DateTimeOffset.UnixEpoch;
         IsBlocked = user.BlockedUntilDate > now;
-        BlockedUntil = IsBlocked && user.BlockedUntilDate != DateTime.MaxValue
+        BlockedUntil = IsBlocked && user.BlockedUntilDate != DateTimeOffset.MaxValue
             ? user.BlockedUntilDate
             : null;
 

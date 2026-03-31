@@ -127,7 +127,7 @@
                                     </td>
                                     <td>@p.SentOn.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                     <td>
-                                        @if (p.ReceivedOn.HasValue && p.ReceivedOn != DateTime.UnixEpoch)
+                                        @if (p.ReceivedOn.HasValue && p.ReceivedOn != DateTimeOffset.UnixEpoch)
                                         { @p.ReceivedOn.Value.ToString("yyyy-MM-dd HH:mm:ss") }
                                         else
                                         { <span class="text-muted">—</span> }
@@ -191,7 +191,7 @@
                                     </td>
                                     <td>@p.SentOn.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                     <td>
-                                        @if (p.ReceivedOn.HasValue && p.ReceivedOn != DateTime.UnixEpoch)
+                                        @if (p.ReceivedOn.HasValue && p.ReceivedOn != DateTimeOffset.UnixEpoch)
                                         { @p.ReceivedOn.Value.ToString("yyyy-MM-dd HH:mm:ss") }
                                         else
                                         { <span class="text-muted">—</span> }

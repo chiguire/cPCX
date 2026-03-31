@@ -7,9 +7,9 @@
 
 @functions
 {   
-    private string FormatDate(DateTime d) 
+    private string FormatDate(DateTimeOffset d)
     {
-        return @d.ToShortDateString();
+        return d.ToString("d");
     }
 }
 

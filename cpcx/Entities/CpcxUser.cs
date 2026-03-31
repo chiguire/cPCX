@@ -14,7 +14,7 @@ public class CpcxUser : IdentityUser<Guid>
     
     public List<CpcxUser>? BlockedUsers { get; set; } = null!;
     
-    public DateTime DeactivatedDate { get; set; } = DateTime.UnixEpoch;
-    public DateTime BlockedUntilDate { get; set; } = DateTime.UnixEpoch;
+    public DateTimeOffset DeactivatedDate { get; set; } = DateTimeOffset.UnixEpoch;
+    public DateTimeOffset BlockedUntilDate { get; set; } = DateTimeOffset.UnixEpoch;
     public bool IsDeleted { get; set; } = false;
 }

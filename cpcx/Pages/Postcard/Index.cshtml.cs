@@ -35,7 +35,7 @@ public class Index(UserManager<CpcxUser> userManager,
             Postcard = p;
 
             // If postcard has not been registered yet
-            if (!p.ReceivedOn.HasValue || p.ReceivedOn.Value == DateTime.UnixEpoch)
+            if (!p.ReceivedOn.HasValue || p.ReceivedOn.Value == DateTimeOffset.UnixEpoch)
             {
                 // No idea why the receiver would look for the postcard ID before registering, but since we're there
                 if (p.Receiver == us)
