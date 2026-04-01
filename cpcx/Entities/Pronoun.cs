@@ -17,7 +17,7 @@ public enum Pronoun
     Group,
 }
 
-static class EnumExtensions
+public static class EnumExtensions
 {
     public static string GetDescription(this Enum value)
     {

@@ -210,4 +210,119 @@ root.AddCommand(userCmd);
     userCmd.AddCommand(cmd);
 }
 
+// user status
+{
+    var usernameArg = new Argument<string>("username");
+    var evOpt = new Option<string?>("--event", "Event public ID. Defaults to Cpcx:ActiveEventId.");
+    var cmd = new Command("status", "Show user profile, account status, and postcard stats");
+    cmd.AddArgument(usernameArg);
+    cmd.AddOption(evOpt);
+    cmd.SetHandler(async (conn, username, evId) =>
+    {
+        await using var db = CreateDb(conn);
+        var user = await ResolveUser(db, username);
+        var ev = await ResolveEvent(db, evId);
+
+        var eu = await db.EventUsers
+            .FirstOrDefaultAsync(eu => eu.UserId == user.Id && eu.EventId == ev.Id);
+
+        var travellingPostcards = await db.Postcards
+            .Include(p => p.Event)
+            .Include(p => p.Receiver)
+            .Where(p =>
+                p.Sender.Id == user.Id &&
+                p.Event.Id == ev.Id &&
+                (p.ReceivedOn == null || p.ReceivedOn == DateTimeOffset.UnixEpoch))
+            .OrderBy(p => p.SentOn)
+            .ToListAsync();
+
+        var now = DateTimeOffset.UtcNow;
+
+        Console.WriteLine($"=== {user.UserName} ===");
+        Console.WriteLine($"  Id:          {user.Id}");
+        Console.WriteLine($"  Pronouns:    {user.Pronouns.GetDescription()}");
+        Console.WriteLine($"  Description: {(string.IsNullOrEmpty(user.ProfileDescription) ? "(none)" : user.ProfileDescription)}");
+        Console.WriteLine($"  Avatar:      {(string.IsNullOrEmpty(user.AvatarPath) ? "(none)" : user.AvatarPath)}");
+        Console.WriteLine();
+
+        Console.WriteLine("--- Account status ---");
+        if (user.IsDeleted)
+            Console.WriteLine("  DELETED");
+        if (user.DeactivatedDate != DateTimeOffset.UnixEpoch)
+            Console.WriteLine($"  DEACTIVATED (since {user.DeactivatedDate:u})");
+        if (user.BlockedUntilDate > now)
+        {
+            var blockDesc = user.BlockedUntilDate == DateTimeOffset.MaxValue
+                ? "BLOCKED (permanent)"
+                : $"BLOCKED (until {user.BlockedUntilDate:u})";
+            Console.WriteLine($"  {blockDesc}");
+        }
+        if (!user.IsDeleted && user.DeactivatedDate == DateTimeOffset.UnixEpoch && user.BlockedUntilDate <= now)
+            Console.WriteLine("  OK");
+        Console.WriteLine();
+
+        Console.WriteLine($"--- Event: {ev.PublicId} ({ev.Name}) ---");
+        if (eu is null)
+        {
+            Console.WriteLine("  Not registered in this event.");
+        }
+        else
+        {
+            Console.WriteLine($"  Address:    {(string.IsNullOrEmpty(eu.Address) ? "(none)" : eu.Address)}");
+            Console.WriteLine($"  Active:     {eu.ActiveInEvent}");
+            Console.WriteLine($"  Sent:       {eu.PostcardsSent}");
+            Console.WriteLine($"  Received:   {eu.PostcardsReceived}");
+            Console.WriteLine($"  Travelling: {travellingPostcards.Count}");
+        }
+
+        if (travellingPostcards.Count > 0)
+        {
+            Console.WriteLine();
+            Console.WriteLine("--- Travelling postcards (sent by user, not yet received) ---");
+            foreach (var p in travellingPostcards)
+            {
+                Console.WriteLine($"  {p.FullPostCardId}  → {p.Receiver.UserName}  sent {p.SentOn:u}");
+            }
+        }
+    }, connectionOpt, usernameArg, evOpt);
+    userCmd.AddCommand(cmd);
+}
+
+// user incoming
+{
+    var usernameArg = new Argument<string>("username");
+    var evOpt = new Option<string?>("--event", "Event public ID. Defaults to Cpcx:ActiveEventId.");
+    var cmd = new Command("incoming", "List travelling postcards heading to a user and who sent them");
+    cmd.AddArgument(usernameArg);
+    cmd.AddOption(evOpt);
+    cmd.SetHandler(async (conn, username, evId) =>
+    {
+        await using var db = CreateDb(conn);
+        var user = await ResolveUser(db, username);
+        var ev = await ResolveEvent(db, evId);
+
+        var incoming = await db.Postcards
+            .Include(p => p.Event)
+            .Include(p => p.Sender)
+            .Where(p =>
+                p.Receiver.Id == user.Id &&
+                p.Event.Id == ev.Id &&
+                (p.ReceivedOn == null || p.ReceivedOn == DateTimeOffset.UnixEpoch))
+            .OrderBy(p => p.SentOn)
+            .ToListAsync();
+
+        Console.WriteLine($"Travelling postcards incoming for '{username}' in {ev.PublicId} ({ev.Name}):");
+        if (incoming.Count == 0)
+        {
+            Console.WriteLine("  (none)");
+            return;
+        }
+        foreach (var p in incoming)
+        {
+            Console.WriteLine($"  {p.FullPostCardId}  from {p.Sender.UserName}  sent {p.SentOn:u}");
+        }
+    }, connectionOpt, usernameArg, evOpt);
+    userCmd.AddCommand(cmd);
+}
+
 return await root.InvokeAsync(args);
