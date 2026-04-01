@@ -31,7 +31,7 @@
                     Your account has been temporarily suspended.
                     @if (Model.BlockedUntil.HasValue)
                     {
-                        <span>Access will be restored on @Model.BlockedUntil.Value.ToString("f", System.Globalization.CultureInfo.CreateSpecificCulture("en-GB")) UTC.</span>
+                        <span>Access will be restored on @Model.BlockedUntil.Value.ToString("d MMM yyyy, HH:mm", System.Globalization.CultureInfo.InvariantCulture) UTC.</span>
                     }
                 </p>
             </div>
