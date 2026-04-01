@@ -9,6 +9,8 @@ public class UserStatusMiddleware(RequestDelegate next, TimeProvider timeProvide
     [
         "/Restricted",
         "/Identity/Account/Logout",
+        "/Identity/Account/Login",
+        "/Error",
     ];
 
     public async Task InvokeAsync(HttpContext context)
