@@ -74,7 +74,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         var avatarPath = configuration.GetValue<string>("Cpcx:AvatarPath") ?? "";
         var avatarFiles = (!string.IsNullOrEmpty(avatarPath) && Directory.Exists(avatarPath))
-            ? Directory.GetFiles(avatarPath).Select(Path.GetFileName).Where(f => f != null).ToArray()!
+            ? Directory.GetFiles(avatarPath).Select(Path.GetFileName).OfType<string>().ToArray()
             : [];
 
         var zones = new[] { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
