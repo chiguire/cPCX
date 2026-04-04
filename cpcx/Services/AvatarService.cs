@@ -32,7 +32,7 @@ public class AvatarService(IOptions<CpcxConfig> cpcxConfig) : IAvatarService
     private List<string> _GetAvatarList()
     {
         if (_avatarList != null) return _avatarList;
-        var files = Directory.GetFiles(_cpcxConfig.AvatarPath);
+        var files = Directory.GetFiles(_cpcxConfig.AvatarPath).Select(Path.GetFileName).OfType<string>().ToArray();
         _avatarList = files.ToList().ConvertAll(Path.GetFileName)!;
 
         return _avatarList;

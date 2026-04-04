@@ -19,6 +19,13 @@
         <div class="alert alert-info rounded p-lg-3" role="alert">Have you been redirected to this page? You might need to join the internal wifi network to be able to access the full website.</div>
       </div>
     </div>
+    <div id="geo-card" class="row mb-3" style="display:none!important">
+      <div class="col-lg">
+        <div class="alert alert-success rounded p-lg-3" role="alert">
+          <a id="geo-link" href=""></a>
+        </div>
+      </div>
+    </div>
     <div class="p-4 border rounded">
       <p>DeerPost is a postcard exchange program for camp sites.</p>
       <p>The fundamental idea is: for each postcard you send, you will receive one back from a random member in this event.</p>
@@ -32,6 +39,17 @@
     if (new URLSearchParams(window.location.search).get('domain_redirected') === 'true') {
       $('#redirected-notice').show();
     }
+    fetch('/geo-check').then(function(r) {
+      if (r.ok) {
+        r.text().then(function(domain) {
+          domain = domain.trim();
+          var link = document.getElementById('geo-link');
+          link.href = 'https://' + domain;
+          link.textContent = domain;
+          $('#geo-card').show();
+        });
+      }
+    }).catch(function() {});
   </script>
 </body>
 </html>
