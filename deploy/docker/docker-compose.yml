@@ -26,6 +26,7 @@ services:
       Smtp__Host: ${SMTP_HOST:-}
       Smtp__Username: ${SMTP_USERNAME:-}
       Smtp__Password: ${SMTP_PASSWORD:-}
+      Cpcx__CaretakerEmail: ${CARETAKER_EMAIL:-}
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;Port=5432;
         Database=${POSTGRES_DB:-cpcx};

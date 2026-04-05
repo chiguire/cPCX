@@ -12,4 +12,5 @@ ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -v -i inventory.ini play
     -e "smtp_host=${SMTP_HOST}" \
     -e "smtp_username=${SMTP_USERNAME}" \
     -e "smtp_password=${SMTP_PASSWORD}" \
+    -e "caretaker_email=${CARETAKER_EMAIL}" \
     $EXTRA_ARGS

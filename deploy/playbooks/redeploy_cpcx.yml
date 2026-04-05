@@ -15,9 +15,10 @@
         regexp: "^{{ item.key }}="
         line: "{{ item.key }}={{ item.value }}"
       loop:
-        - { key: SMTP_HOST,     value: "{{ smtp_host }}" }
-        - { key: SMTP_USERNAME, value: "{{ smtp_username }}" }
-        - { key: SMTP_PASSWORD, value: "{{ smtp_password }}" }
+        - { key: SMTP_HOST,       value: "{{ smtp_host }}" }
+        - { key: SMTP_USERNAME,   value: "{{ smtp_username }}" }
+        - { key: SMTP_PASSWORD,   value: "{{ smtp_password }}" }
+        - { key: CARETAKER_EMAIL, value: "{{ caretaker_email }}" }
 
     - name: Stop cpcx service
       shell: systemctl --user stop cpcx
