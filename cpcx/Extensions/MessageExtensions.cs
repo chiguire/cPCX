@@ -13,7 +13,7 @@ public static class MessageExtensions
         var messageParts = fullStatusMessage.Split('%', 2, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (!int.TryParse(messageParts[0], out var messageType))
         {
-            throw new Exception("Status message incorrect format");
+            throw new Exception($"Status message incorrect format. Message: {fullStatusMessage}");
         }
         var message = messageParts[1];
         var messageCss = "";
