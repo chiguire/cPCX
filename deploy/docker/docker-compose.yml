@@ -23,6 +23,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;Port=5432;
         Database=${POSTGRES_DB:-cpcx};

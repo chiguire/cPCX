@@ -9,6 +9,16 @@
         force: true
         key_file: ~/.ssh/id_ed25519
 
+    - name: Update SMTP settings in .env
+      lineinfile:
+        path: ~/app/deploy/docker/.env
+        regexp: "^{{ item.key }}="
+        line: "{{ item.key }}={{ item.value }}"
+      loop:
+        - { key: SMTP_HOST,     value: "{{ smtp_host }}" }
+        - { key: SMTP_USERNAME, value: "{{ smtp_username }}" }
+        - { key: SMTP_PASSWORD, value: "{{ smtp_password }}" }
+
     - name: Stop cpcx service
       shell: systemctl --user stop cpcx
       environment:

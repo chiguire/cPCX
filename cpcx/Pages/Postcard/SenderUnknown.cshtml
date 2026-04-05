@@ -1,19 +1,33 @@
 @page
 @model cpcx.Pages.Postcard.SenderUnknown
-
 @{
-    Layout = null;
+    ViewData["Title"] = "Unknown Postcard";
 }
 
-<!DOCTYPE html>
-
-<html>
-<head>
-    <title></title>
-</head>
-<body>
 <div>
-    
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+    <p>Received a postcard with no ID, or whose sender you can't identify? Fill in the form below and the caretaker will look into it for you.</p>
+
+    @if (!Model.HasEmail)
+    {
+        <div class="alert alert-warning" role="alert">
+            You don't have an email address set on your account. The caretaker needs a way to reply to you — please
+            <a asp-area="Identity" asp-page="/Account/Manage/Email">set your email address</a> first.
+        </div>
+    }
+    else
+    {
+        <form method="post">
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">
+                    Describe the postcard and/or the sender — any recognisable details (username, handwriting style, camp zone, etc.):
+                </label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            </div>
+            <input type="submit" value="Send Report" class="btn btn-primary" />
+        </form>
+    }
 </div>
-</body>
-</html>

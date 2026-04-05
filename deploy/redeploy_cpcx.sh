@@ -9,4 +9,7 @@ fi
 
 ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -v -i inventory.ini playbooks/redeploy_cpcx.yml \
     -e "github_repo=${GITHUB_REPO}" \
+    -e "smtp_host=${SMTP_HOST}" \
+    -e "smtp_username=${SMTP_USERNAME}" \
+    -e "smtp_password=${SMTP_PASSWORD}" \
     $EXTRA_ARGS
