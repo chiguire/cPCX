@@ -5,9 +5,9 @@ http {
     default_type  application/octet-stream;
     server_names_hash_bucket_size 64;
 
-    geo $emf_allowed {
+    geo $cpcx_allowed {
         default 0;
-        {% for cidr in emf_allowed_cidrs.split(',') %}
+        {% for cidr in allowed_cidrs.split(',') %}
         {{ cidr }} 1;
         {% endfor %}
     }
@@ -45,7 +45,7 @@ http {
 
         location = /geo-check {
             default_type text/plain;
-            if ($emf_allowed = 0) {
+            if ($cpcx_allowed = 0) {
                 return 404;
             }
             return 200 'emf.deerpost.cx';
@@ -62,7 +62,7 @@ http {
         ssl_protocols       TLSv1.2 TLSv1.3;
         ssl_ciphers         HIGH:!aNULL:!MD5;
 
-        if ($emf_allowed = 0) {
+        if ($cpcx_allowed = 0) {
             return 302 https://www.deerpost.cx/?domain_redirected=true;
         }
 

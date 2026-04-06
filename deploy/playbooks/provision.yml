@@ -181,7 +181,7 @@
         certbot certonly --webroot -w /var/www/html --non-interactive --agree-tos
         --email {{ certbot_email }}
         -d {{ domain_apex }}
-        -d {{ domain_emf }}
+        -d {{ domain_cpcx }}
       args:
         creates:
           - /etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem
