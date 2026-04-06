@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using cpcx.Services;
 using Microsoft.AspNetCore.Authorization;
 using cpcx.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -73,8 +74,8 @@ namespace cpcx.Areas.Identity.Pages.Account
 
                 await _emailSender.SendEmailAsync(
                     Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    "Reset your password",
+                    EmailTemplates.ResetPassword(HtmlEncoder.Default.Encode(callbackUrl)));
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

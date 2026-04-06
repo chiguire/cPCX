@@ -9,6 +9,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using cpcx.Config;
 using cpcx.Entities;
+using cpcx.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -133,8 +134,8 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
                         protocol: Request.Scheme);
                     await _emailSender.SendEmailAsync(
                         Input.NewEmail,
-                        "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        "Confirm your email address",
+                        EmailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl)));
 
                     StatusMessage = "Confirmation link to change email sent. Please check your email.";
                 }
@@ -175,8 +176,8 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                "Confirm your email address",
+                EmailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl)));
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

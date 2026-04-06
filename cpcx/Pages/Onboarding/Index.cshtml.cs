@@ -161,8 +161,8 @@ public class Index(
                     protocol: Request.Scheme);
                 await emailSender.SendEmailAsync(
                     EmailStep.Email,
-                    "Confirm your email",
-                    $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callbackUrl!)}'>clicking here</a>.");
+                    "Confirm your email address",
+                    EmailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl!)));
                 SetStatusMessage("Thanks for setting up your profile! A confirmation email is on its way.", StatusMessageType.Success);
             }
             else
