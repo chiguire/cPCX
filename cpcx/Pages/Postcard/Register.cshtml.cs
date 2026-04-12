@@ -54,7 +54,7 @@ public class Register(MainEventService mainEventService,
         try
         {
             var p = await postcardService.RegisterPostcard(u, mainEventPublicId, PostcardId);
-            SetStatusMessage("Thanks for registering this postcard!", StatusMessageType.Success);
+            SetStatusMessage("Thanks for registering this postcard! Another one should come your way soon", StatusMessageType.Success);
             return RedirectToPage("/Postcard/Index", new { postcardId = p.FullPostCardId });
         }
         catch (CPCXException e)

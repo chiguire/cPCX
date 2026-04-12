@@ -82,7 +82,7 @@ namespace cpcx.Services
                 throw new CPCXException(CPCXErrorCode.EventNotFound);
             }
 
-            e.Visible = value;
+            e.Open = value;
             context.Update(e);
             await context.SaveChangesAsync();
         }

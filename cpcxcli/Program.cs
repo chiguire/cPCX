@@ -134,6 +134,145 @@ root.AddCommand(eventCmd);
     eventCmd.AddCommand(cmd);
 }
 
+// event show
+{
+    var evOpt = new Option<string?>("--event", "Event public ID. Defaults to Cpcx:ActiveEventId.");
+    var cmd = new Command("show", "Make an event visible to users");
+    cmd.AddOption(evOpt);
+    cmd.SetHandler(async (conn, ev) =>
+    {
+        await using var db = CreateDb(conn);
+        var e = await ResolveEvent(db, ev);
+        e.Visible = true;
+        await db.SaveChangesAsync();
+        Console.WriteLine($"[OK] {e.PublicId} ({e.Name}) is now visible.");
+    }, connectionOpt, evOpt);
+    eventCmd.AddCommand(cmd);
+}
+
+// event hide
+{
+    var evOpt = new Option<string?>("--event", "Event public ID. Defaults to Cpcx:ActiveEventId.");
+    var cmd = new Command("hide", "Hide an event from users");
+    cmd.AddOption(evOpt);
+    cmd.SetHandler(async (conn, ev) =>
+    {
+        await using var db = CreateDb(conn);
+        var e = await ResolveEvent(db, ev);
+        e.Visible = false;
+        await db.SaveChangesAsync();
+        Console.WriteLine($"[OK] {e.PublicId} ({e.Name}) is now hidden.");
+    }, connectionOpt, evOpt);
+    eventCmd.AddCommand(cmd);
+}
+
+// event set-name
+{
+    var evOpt   = new Option<string?>("--event", "Event public ID. Defaults to Cpcx:ActiveEventId.");
+    var nameArg = new Argument<string>("name", "New full event name");
+    var cmd = new Command("set-name", "Rename an event");
+    cmd.AddOption(evOpt);
+    cmd.AddArgument(nameArg);
+    cmd.SetHandler(async (conn, ev, name) =>
+    {
+        await using var db = CreateDb(conn);
+        var e = await ResolveEvent(db, ev);
+        if (db.Events.Any(x => x.Id != e.Id && string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            Console.Error.WriteLine($"Error: name '{name}' is already used by another event.");
+            Environment.Exit(1);
+        }
+        var old = e.Name;
+        e.Name = name;
+        await db.SaveChangesAsync();
+        Console.WriteLine($"[OK] {e.PublicId} renamed '{old}' → '{e.Name}'.");
+    }, connectionOpt, evOpt, nameArg);
+    eventCmd.AddCommand(cmd);
+}
+
+// event set-venue
+{
+    var evOpt    = new Option<string?>("--event", "Event public ID. Defaults to Cpcx:ActiveEventId.");
+    var venueArg = new Argument<string>("venue", "New venue");
+    var cmd = new Command("set-venue", "Set the venue for an event");
+    cmd.AddOption(evOpt);
+    cmd.AddArgument(venueArg);
+    cmd.SetHandler(async (conn, ev, venue) =>
+    {
+        await using var db = CreateDb(conn);
+        var e = await ResolveEvent(db, ev);
+        e.Venue = venue;
+        await db.SaveChangesAsync();
+        Console.WriteLine($"[OK] {e.PublicId} ({e.Name}) venue set to '{e.Venue}'.");
+    }, connectionOpt, evOpt, venueArg);
+    eventCmd.AddCommand(cmd);
+}
+
+// event create
+{
+    var idArg      = new Argument<string>("public-id",   "3-char public ID (e.g. E27)");
+    var nameOpt    = new Option<string>("--name",        "Full event name")         { IsRequired = true };
+    var shortOpt   = new Option<string>("--short-name",  "Short event name")        { IsRequired = true };
+    var urlOpt     = new Option<string>("--url",         "Event URL")               { IsRequired = true };
+    var venueOpt   = new Option<string>("--venue",       "Venue")                   { IsRequired = true };
+    var startOpt   = new Option<DateTime>("--start",     "Start date/time in UTC (ISO 8601)") { IsRequired = true };
+    var endOpt     = new Option<DateTime>("--end",       "End date/time in UTC (ISO 8601)")   { IsRequired = true };
+    var visibleOpt = new Option<bool>("--visible",       "Make event visible immediately (default: false)");
+    var openOpt    = new Option<bool>("--open",          "Open event for registration immediately (default: false)");
+    var cmd = new Command("create", "Create a new event");
+    cmd.AddArgument(idArg);
+    cmd.AddOption(nameOpt);
+    cmd.AddOption(shortOpt);
+    cmd.AddOption(urlOpt);
+    cmd.AddOption(venueOpt);
+    cmd.AddOption(startOpt);
+    cmd.AddOption(endOpt);
+    cmd.AddOption(visibleOpt);
+    cmd.AddOption(openOpt);
+    cmd.SetHandler(async (context) =>
+    {
+        var conn      = context.ParseResult.GetValueForOption(connectionOpt);
+        var publicId  = context.ParseResult.GetValueForArgument(idArg);
+        var name      = context.ParseResult.GetValueForOption(nameOpt)!;
+        var shortName = context.ParseResult.GetValueForOption(shortOpt)!;
+        var url       = context.ParseResult.GetValueForOption(urlOpt)!;
+        var venue     = context.ParseResult.GetValueForOption(venueOpt)!;
+        var start     = context.ParseResult.GetValueForOption(startOpt);
+        var end       = context.ParseResult.GetValueForOption(endOpt);
+        var visible   = context.ParseResult.GetValueForOption(visibleOpt);
+        var open      = context.ParseResult.GetValueForOption(openOpt);
+
+        await using var db = CreateDb(conn!);
+        if (db.Events.Any(e => string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            Console.Error.WriteLine($"Error: event name '{name}' is already in use.");
+            Environment.Exit(1);
+        }
+        if (db.Events.Any(e => e.PublicId == publicId))
+        {
+            Console.Error.WriteLine($"Error: public ID '{publicId}' is already in use.");
+            Environment.Exit(1);
+        }
+        var ev = new Event
+        {
+            Id        = Guid.NewGuid(),
+            PublicId  = publicId,
+            Name      = name,
+            ShortName = shortName,
+            URL       = url,
+            Venue     = venue,
+            Start     = new DateTimeOffset(DateTime.SpecifyKind(start, DateTimeKind.Utc)),
+            End       = new DateTimeOffset(DateTime.SpecifyKind(end,   DateTimeKind.Utc)),
+            Visible   = visible,
+            Open      = open,
+        };
+        db.Events.Add(ev);
+        await db.SaveChangesAsync();
+        Console.WriteLine($"[OK] Created event {ev.PublicId} '{ev.Name}' ({ev.Start:u} — {ev.End:u}).");
+    });
+    eventCmd.AddCommand(cmd);
+}
+
 // ── user commands ─────────────────────────────────────────────────────────────
 
 var userCmd = new Command("user", "Manage users");
