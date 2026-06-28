@@ -273,6 +273,79 @@ root.AddCommand(eventCmd);
     eventCmd.AddCommand(cmd);
 }
 
+// event stats
+{
+    var evOpt = new Option<string?>("--event", "Event public ID. Defaults to Cpcx:ActiveEventId.");
+    var cmd = new Command("stats", "Show statistics for an event");
+    cmd.AddOption(evOpt);
+    cmd.SetHandler(async (conn, evId) =>
+    {
+        await using var db = CreateDb(conn);
+        var ev = await ResolveEvent(db, evId);
+
+        var registeredCount = await db.EventUsers.CountAsync(eu => eu.EventId == ev.Id);
+
+        var senderIds = await db.Postcards
+            .Where(p => p.Event.Id == ev.Id)
+            .Select(p => p.Sender.Id)
+            .Distinct()
+            .ToListAsync();
+        var receiverIds = await db.Postcards
+            .Where(p => p.Event.Id == ev.Id)
+            .Select(p => p.Receiver.Id)
+            .Distinct()
+            .ToListAsync();
+        var activeCount = senderIds.Union(receiverIds).Count();
+
+        var postcardCount = await db.Postcards.CountAsync(p => p.Event.Id == ev.Id);
+
+        var postcardTimes = await db.Postcards
+            .Where(p => p.Event.Id == ev.Id)
+            .Select(p => new { p.SentOn, p.ReceivedOn })
+            .ToListAsync();
+
+        static string PeakHour(IEnumerable<DateTimeOffset> times)
+        {
+            var list = times.ToList();
+            if (list.Count == 0) return "(none)";
+            var peak = list
+                .GroupBy(t => t.UtcDateTime.Hour)
+                .OrderByDescending(g => g.Count())
+                .First();
+            return $"{peak.Key:D2}:00–{peak.Key:D2}:59 UTC ({peak.Count()} postcards)";
+        }
+
+        var peakSent     = PeakHour(postcardTimes.Select(p => p.SentOn));
+        var peakReceived = PeakHour(postcardTimes
+            .Where(p => p.ReceivedOn.HasValue && p.ReceivedOn != DateTimeOffset.UnixEpoch)
+            .Select(p => p.ReceivedOn!.Value));
+
+        var top10 = await db.EventUsers
+            .Include(eu => eu.User)
+            .Where(eu => eu.EventId == ev.Id)
+            .OrderByDescending(eu => eu.PostcardsSent + eu.PostcardsReceived)
+            .Take(10)
+            .ToListAsync();
+
+        Console.WriteLine($"=== Stats: {ev.PublicId} ({ev.Name}) ===");
+        Console.WriteLine();
+        Console.WriteLine($"  Registered users: {registeredCount}");
+        Console.WriteLine($"  Active users:     {activeCount}");
+        Console.WriteLine($"  Postcards:        {postcardCount}");
+        Console.WriteLine($"  Peak sent:        {peakSent}");
+        Console.WriteLine($"  Peak received:    {peakReceived}");
+        Console.WriteLine();
+        Console.WriteLine("--- Top 10 users ---");
+        Console.WriteLine($"  {"#",-3}  {"Username",-24}  {"Sent",5}  {"Received",8}  {"Total",5}");
+        for (int i = 0; i < top10.Count; i++)
+        {
+            var eu = top10[i];
+            Console.WriteLine($"  {i + 1,-3}  {eu.User.UserName,-24}  {eu.PostcardsSent,5}  {eu.PostcardsReceived,8}  {eu.PostcardsSent + eu.PostcardsReceived,5}");
+        }
+    }, connectionOpt, evOpt);
+    eventCmd.AddCommand(cmd);
+}
+
 // ── user commands ─────────────────────────────────────────────────────────────
 
 var userCmd = new Command("user", "Manage users");
