@@ -24,6 +24,7 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IPostcardService, PostcardService>();
 builder.Services.AddSingleton<MainEventService>();
 builder.Services.AddSingleton<IAvatarService, AvatarService>();
+builder.Services.AddSingleton<EmailTemplates>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Add services to the container.

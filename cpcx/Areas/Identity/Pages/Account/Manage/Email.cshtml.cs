@@ -25,17 +25,20 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
         private readonly SignInManager<CpcxUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly SmtpConfig _smtpConfig;
+        private readonly EmailTemplates _emailTemplates;
 
         public EmailModel(
             UserManager<CpcxUser> userManager,
             SignInManager<CpcxUser> signInManager,
             IEmailSender emailSender,
-            IOptions<SmtpConfig> smtpConfig)
+            IOptions<SmtpConfig> smtpConfig,
+            EmailTemplates emailTemplates)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _smtpConfig = smtpConfig.Value;
+            _emailTemplates = emailTemplates;
         }
 
         /// <summary>
@@ -135,7 +138,7 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
                     await _emailSender.SendEmailAsync(
                         Input.NewEmail,
                         "Confirm your email address",
-                        EmailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl)));
+                        _emailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl)));
 
                     StatusMessage = "Confirmation link to change email sent. Please check your email.";
                 }
@@ -177,7 +180,7 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             await _emailSender.SendEmailAsync(
                 email,
                 "Confirm your email address",
-                EmailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl)));
+                _emailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl)));
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

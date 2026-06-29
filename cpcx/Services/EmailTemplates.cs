@@ -1,8 +1,20 @@
 namespace cpcx.Services;
 
-public static class EmailTemplates
+public class EmailTemplates(IWebHostEnvironment env)
 {
-    public static string ConfirmEmail(string confirmUrl) => Layout(
+    private string? _logoDataUri;
+
+    private string LogoDataUri => _logoDataUri ??= LoadLogo();
+
+    private string LoadLogo()
+    {
+        var path = Path.Combine(env.WebRootPath, "img", "logodeerpost.png");
+        if (!File.Exists(path)) return "";
+        var bytes = File.ReadAllBytes(path);
+        return "data:image/png;base64," + Convert.ToBase64String(bytes);
+    }
+
+    public string ConfirmEmail(string confirmUrl) => Layout(
         title: "Confirm your email address",
         preheader: "Please confirm your DeerPost email address.",
         body: $"""
@@ -12,7 +24,7 @@ public static class EmailTemplates
             <p style="color:#6b7280;font-size:14px;">If you didn't create a DeerPost account, you can safely ignore this email.</p>
             """);
 
-    public static string ResetPassword(string resetUrl) => Layout(
+    public string ResetPassword(string resetUrl) => Layout(
         title: "Reset your password",
         preheader: "You requested a password reset for your DeerPost account.",
         body: $"""
@@ -33,8 +45,13 @@ public static class EmailTemplates
         </p>
         """;
 
-    private static string Layout(string title, string preheader, string body) =>
-        $"""
+    private string Layout(string title, string preheader, string body)
+    {
+        var logoImg = string.IsNullOrEmpty(LogoDataUri)
+            ? ""
+            : $"""<img src="{LogoDataUri}" alt="DeerPost" style="height:40px;vertical-align:middle;margin-right:10px;" />""";
+
+        return $"""
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -50,8 +67,8 @@ public static class EmailTemplates
                 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
                   <!-- Header -->
                   <tr>
-                    <td style="background-color:#2563eb;border-radius:8px 8px 0 0;padding:24px 32px;text-align:center;">
-                      <span style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">DeerPost</span>
+                    <td style="background-color:#e5e7eb;border-radius:8px 8px 0 0;padding:24px 32px;text-align:center;">
+                      {logoImg}<span style="color:#111827;font-size:22px;font-weight:700;letter-spacing:-0.5px;vertical-align:middle;">DeerPost.cx</span>
                     </td>
                   </tr>
                   <!-- Body -->
@@ -74,4 +91,5 @@ public static class EmailTemplates
         </body>
         </html>
         """;
+    }
 }

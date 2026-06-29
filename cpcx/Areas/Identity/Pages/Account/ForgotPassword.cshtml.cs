@@ -22,11 +22,13 @@ namespace cpcx.Areas.Identity.Pages.Account
     {
         private readonly UserManager<CpcxUser> _userManager;
         private readonly IEmailSender _emailSender;
+        private readonly EmailTemplates _emailTemplates;
 
-        public ForgotPasswordModel(UserManager<CpcxUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(UserManager<CpcxUser> userManager, IEmailSender emailSender, EmailTemplates emailTemplates)
         {
             _userManager = userManager;
             _emailSender = emailSender;
+            _emailTemplates = emailTemplates;
         }
 
         /// <summary>
@@ -75,7 +77,7 @@ namespace cpcx.Areas.Identity.Pages.Account
                 await _emailSender.SendEmailAsync(
                     Input.Email,
                     "Reset your password",
-                    EmailTemplates.ResetPassword(HtmlEncoder.Default.Encode(callbackUrl)));
+                    _emailTemplates.ResetPassword(HtmlEncoder.Default.Encode(callbackUrl)));
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

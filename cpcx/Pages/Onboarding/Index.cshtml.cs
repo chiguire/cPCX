@@ -22,7 +22,8 @@ public class Index(
     IAvatarService avatarService,
     MainEventService mainEventService,
     IEmailSender emailSender,
-    IOptions<SmtpConfig> smtpConfig) : MessagePageModel
+    IOptions<SmtpConfig> smtpConfig,
+    EmailTemplates emailTemplates) : MessagePageModel
 {
     [BindProperty] public int Step { get; set; } = 1;
     [BindProperty] public bool Skip { get; set; } = false;
@@ -162,7 +163,7 @@ public class Index(
                 await emailSender.SendEmailAsync(
                     EmailStep.Email,
                     "Confirm your email address",
-                    EmailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl!)));
+                    emailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl!)));
                 SetStatusMessage("Thanks for setting up your profile! A confirmation email is on its way.", StatusMessageType.Success);
             }
             else
