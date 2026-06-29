@@ -1,12 +1,13 @@
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
 using cpcx.Config;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 
 namespace cpcx.Services;
 
-public class SmtpEmailSender(IOptions<SmtpConfig> config, ILogger<SmtpEmailSender> logger) : IEmailSender
+public class SmtpEmailSender(IOptions<SmtpConfig> config, IWebHostEnvironment env, ILogger<SmtpEmailSender> logger) : IEmailSender
 {
     public async Task SendEmailAsync(string email, string subject, string htmlMessage)
     {
@@ -26,9 +27,19 @@ public class SmtpEmailSender(IOptions<SmtpConfig> config, ILogger<SmtpEmailSende
             new MailAddress(email))
         {
             Subject = subject,
-            Body = htmlMessage,
-            IsBodyHtml = true,
         };
+
+        var htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, null, "text/html");
+
+        var logoPath = Path.Combine(env.WebRootPath, "img", "logodeerpost.png");
+        if (File.Exists(logoPath))
+        {
+            var logo = new LinkedResource(logoPath, new ContentType("image/png")) { ContentId = "logo" };
+            htmlView.LinkedResources.Add(logo);
+        }
+
+        message.AlternateViews.Add(htmlView);
+
         await client.SendMailAsync(message);
     }
 }

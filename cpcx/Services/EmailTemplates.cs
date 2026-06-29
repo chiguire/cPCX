@@ -1,18 +1,9 @@
 namespace cpcx.Services;
 
-public class EmailTemplates(IWebHostEnvironment env)
+public class EmailTemplates
 {
-    private string? _logoDataUri;
-
-    private string LogoDataUri => _logoDataUri ??= LoadLogo();
-
-    private string LoadLogo()
-    {
-        var path = Path.Combine(env.WebRootPath, "img", "logodeerpost.png");
-        if (!File.Exists(path)) return "";
-        var bytes = File.ReadAllBytes(path);
-        return "data:image/png;base64," + Convert.ToBase64String(bytes);
-    }
+    private const string LogoImg =
+        """<img src="cid:logo" alt="DeerPost" style="height:40px;vertical-align:middle;margin-right:10px;" />""";
 
     public string ConfirmEmail(string confirmUrl) => Layout(
         title: "Confirm your email address",
@@ -45,13 +36,8 @@ public class EmailTemplates(IWebHostEnvironment env)
         </p>
         """;
 
-    private string Layout(string title, string preheader, string body)
-    {
-        var logoImg = string.IsNullOrEmpty(LogoDataUri)
-            ? ""
-            : $"""<img src="{LogoDataUri}" alt="DeerPost" style="height:40px;vertical-align:middle;margin-right:10px;" />""";
-
-        return $"""
+    private static string Layout(string title, string preheader, string body) =>
+        $"""
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -68,7 +54,7 @@ public class EmailTemplates(IWebHostEnvironment env)
                   <!-- Header -->
                   <tr>
                     <td style="background-color:#e5e7eb;border-radius:8px 8px 0 0;padding:24px 32px;text-align:center;">
-                      {logoImg}<span style="color:#111827;font-size:22px;font-weight:700;letter-spacing:-0.5px;vertical-align:middle;">DeerPost.cx</span>
+                      {LogoImg}<span style="color:#111827;font-size:22px;font-weight:700;letter-spacing:-0.5px;vertical-align:middle;">DeerPost.cx</span>
                     </td>
                   </tr>
                   <!-- Body -->
@@ -91,5 +77,4 @@ public class EmailTemplates(IWebHostEnvironment env)
         </body>
         </html>
         """;
-    }
 }
