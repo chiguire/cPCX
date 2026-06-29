@@ -170,6 +170,11 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
 
             var userId = await _userManager.GetUserIdAsync(user);
             var email = await _userManager.GetEmailAsync(user);
+            if (string.IsNullOrEmpty(email))
+            {
+                StatusMessage = "Error: No email address is set on your account.";
+                return RedirectToPage();
+            }
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             var callbackUrl = Url.Page(
