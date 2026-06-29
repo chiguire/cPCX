@@ -1,19 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using cpcx.Config;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 
 namespace cpcx.Pages;
 
-public class GuidelinesModel : PageModel
+public class GuidelinesModel(IOptions<CpcxConfig> cpcxConfig) : PageModel
 {
-    private readonly ILogger<GuidelinesModel> _logger;
+    public string CaretakerEmail => cpcxConfig.Value.CaretakerEmail;
 
-    public GuidelinesModel(ILogger<GuidelinesModel> logger)
-    {
-        _logger = logger;
-    }
-
-    public void OnGet()
-    {
-    }
+    public void OnGet() { }
 }
 
