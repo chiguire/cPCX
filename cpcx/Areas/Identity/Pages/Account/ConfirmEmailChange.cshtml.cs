@@ -7,14 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using cpcx.Entities;
+using cpcx.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace cpcx.Areas.Identity.Pages.Account
 {
-    public class ConfirmEmailChangeModel : PageModel
+    public class ConfirmEmailChangeModel : MessagePageModel
     {
         private readonly UserManager<CpcxUser> _userManager;
         private readonly SignInManager<CpcxUser> _signInManager;
@@ -24,13 +24,6 @@ namespace cpcx.Areas.Identity.Pages.Account
             _userManager = userManager;
             _signInManager = signInManager;
         }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        [TempData]
-        public string StatusMessage { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string userId, string email, string code)
         {
@@ -49,12 +42,12 @@ namespace cpcx.Areas.Identity.Pages.Account
             var result = await _userManager.ChangeEmailAsync(user, email, code);
             if (!result.Succeeded)
             {
-                StatusMessage = "Error changing email.";
+                SetStatusMessage("Error changing email.", StatusMessageType.Error);
                 return Page();
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Thank you for confirming your email change.";
+            SetStatusMessage("Thank you for confirming your email change.", StatusMessageType.Success);
             return Page();
         }
     }

@@ -110,7 +110,7 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             }
 
             await signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
+            SetStatusMessage("Your profile has been updated", StatusMessageType.Success);
             return RedirectToPage();
         }
     }

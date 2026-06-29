@@ -8,14 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using cpcx.Entities;
+using cpcx.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace cpcx.Areas.Identity.Pages.Account
 {
-    public class ConfirmEmailModel : PageModel
+    public class ConfirmEmailModel : MessagePageModel
     {
         private readonly UserManager<CpcxUser> _userManager;
 
@@ -23,13 +23,6 @@ namespace cpcx.Areas.Identity.Pages.Account
         {
             _userManager = userManager;
         }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        [TempData]
-        public string StatusMessage { get; set; }
         public async Task<IActionResult> OnGetAsync(string userId, string code)
         {
             if (userId == null || code == null)
@@ -45,7 +38,14 @@ namespace cpcx.Areas.Identity.Pages.Account
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            if (result.Succeeded)
+            {
+                SetStatusMessage("Thank you for confirming your email.", StatusMessageType.Success);
+            }
+            else
+            {
+                SetStatusMessage("Error confirming your email.", StatusMessageType.Error);
+            }
             return Page();
         }
     }

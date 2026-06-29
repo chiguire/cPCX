@@ -6,13 +6,13 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using cpcx.Entities;
+using cpcx.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace cpcx.Areas.Identity.Pages.Account.Manage
 {
-    public class SetPasswordModel : PageModel
+    public class SetPasswordModel : MessagePageModel
     {
         private readonly UserManager<CpcxUser> _userManager;
         private readonly SignInManager<CpcxUser> _signInManager;
@@ -31,13 +31,6 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
         /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        [TempData]
-        public string StatusMessage { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -107,7 +100,7 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your password has been set.";
+            SetStatusMessage("Your password has been set.", StatusMessageType.Success);
 
             return RedirectToPage();
         }

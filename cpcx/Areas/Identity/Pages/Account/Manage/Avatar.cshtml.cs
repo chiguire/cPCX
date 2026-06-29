@@ -54,7 +54,7 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             }
 
             await signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your avatar has been updated";
+            SetStatusMessage("Your avatar has been updated", StatusMessageType.Success);
             return RedirectToPage();
         }
     }

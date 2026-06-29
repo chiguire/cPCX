@@ -9,17 +9,17 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using cpcx.Config;
 using cpcx.Entities;
+using cpcx.Models;
 using cpcx.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
 namespace cpcx.Areas.Identity.Pages.Account.Manage
 {
-    public class EmailModel : PageModel
+    public class EmailModel : MessagePageModel
     {
         private readonly UserManager<CpcxUser> _userManager;
         private readonly SignInManager<CpcxUser> _signInManager;
@@ -52,13 +52,6 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public bool IsEmailConfirmed { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        [TempData]
-        public string StatusMessage { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -140,17 +133,17 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
                         "Confirm your email address",
                         _emailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl)));
 
-                    StatusMessage = "Confirmation link to change email sent. Please check your email.";
+                    SetStatusMessage("Confirmation link to change email sent. Please check your email.", StatusMessageType.Info);
                 }
                 else
                 {
                     await _userManager.SetEmailAsync(user, Input.NewEmail);
-                    StatusMessage = "Email updated.";
+                    SetStatusMessage("Email updated.", StatusMessageType.Success);
                 }
                 return RedirectToPage();
             }
 
-            StatusMessage = "Your email is unchanged.";
+            SetStatusMessage("Your email is unchanged.", StatusMessageType.Info);
             return RedirectToPage();
         }
 
@@ -172,7 +165,7 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
             var email = await _userManager.GetEmailAsync(user);
             if (string.IsNullOrEmpty(email))
             {
-                StatusMessage = "Error: No email address is set on your account.";
+                SetStatusMessage("Error: No email address is set on your account.", StatusMessageType.Error);
                 return RedirectToPage();
             }
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -187,7 +180,7 @@ namespace cpcx.Areas.Identity.Pages.Account.Manage
                 "Confirm your email address",
                 _emailTemplates.ConfirmEmail(HtmlEncoder.Default.Encode(callbackUrl)));
 
-            StatusMessage = "Verification email sent. Please check your email.";
+            SetStatusMessage("Verification email sent. Please check your email.", StatusMessageType.Info);
             return RedirectToPage();
         }
     }
