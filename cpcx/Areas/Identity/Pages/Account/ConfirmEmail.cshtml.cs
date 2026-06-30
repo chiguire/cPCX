@@ -46,7 +46,7 @@ namespace cpcx.Areas.Identity.Pages.Account
             {
                 SetStatusMessage("Error confirming your email.", StatusMessageType.Error);
             }
-            return Page();
+            return RedirectToPage("/Index");
         }
     }
 }

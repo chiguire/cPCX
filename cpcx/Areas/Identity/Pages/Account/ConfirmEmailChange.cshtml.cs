@@ -47,12 +47,12 @@ namespace cpcx.Areas.Identity.Pages.Account
             {
                 _logger.LogError($"Error changing email for '{userId}': {string.Join(',', result.Errors.Select(e => e.Description))}");
                 SetStatusMessage("Error changing email.", StatusMessageType.Error);
-                return Page();
+                return RedirectToPage("/Account/Manage/Email", new { area = "Identity" });
             }
 
             await _signInManager.RefreshSignInAsync(user);
             SetStatusMessage("Thank you for confirming your email change.", StatusMessageType.Success);
-            return Page();
+            return RedirectToPage("/Account/Manage/Email", new { area = "Identity" });
         }
     }
 }
