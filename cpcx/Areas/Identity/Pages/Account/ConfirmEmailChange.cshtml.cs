@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using cpcx.Entities;
 using cpcx.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -18,11 +19,13 @@ namespace cpcx.Areas.Identity.Pages.Account
     {
         private readonly UserManager<CpcxUser> _userManager;
         private readonly SignInManager<CpcxUser> _signInManager;
+        private readonly ILogger<ConfirmEmailChangeModel> _logger;
 
-        public ConfirmEmailChangeModel(UserManager<CpcxUser> userManager, SignInManager<CpcxUser> signInManager)
+        public ConfirmEmailChangeModel(UserManager<CpcxUser> userManager, SignInManager<CpcxUser> signInManager, ILogger<ConfirmEmailChangeModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _logger = logger;
         }
 
         public async Task<IActionResult> OnGetAsync(string userId, string email, string code)
@@ -42,6 +45,7 @@ namespace cpcx.Areas.Identity.Pages.Account
             var result = await _userManager.ChangeEmailAsync(user, email, code);
             if (!result.Succeeded)
             {
+                _logger.LogError($"Error changing email for '{userId}': {string.Join(',', result.Errors.Select(e => e.Description))}");
                 SetStatusMessage("Error changing email.", StatusMessageType.Error);
                 return Page();
             }
