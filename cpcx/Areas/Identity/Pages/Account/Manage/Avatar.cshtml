@@ -6,7 +6,7 @@
 }
 
 <h3>@ViewData["Title"]</h3>
-<partial name="_StatusMessage" for="@Model.StatusMessage" />
+<partial name="_StatusMessageId" for="@Model.StatusMessage" />
 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 <form id="avatar-form" method="post">
     <input type="hidden" id="SelectedAvatar" name="SelectedAvatar" value="@Model.CurrentAvatar" />

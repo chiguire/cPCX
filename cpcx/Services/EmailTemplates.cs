@@ -67,7 +67,7 @@ public class EmailTemplates
                   <!-- Footer -->
                   <tr>
                     <td style="background-color:#f9fafb;border-top:1px solid #e5e7eb;border-radius:0 0 8px 8px;padding:20px 32px;text-align:center;color:#9ca3af;font-size:12px;">
-                      &copy; DeerPost. Sending postcards the sneaky way.
+                      &copy; DeerPost.cx
                     </td>
                   </tr>
                 </table>
