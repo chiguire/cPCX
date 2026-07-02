@@ -126,10 +126,12 @@
         - mcr.microsoft.com/dotnet/aspnet:10.0-alpine
 
     - name: Generate postgres password
+      no_log: true
       set_fact:
         postgres_password: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
 
     - name: Write .env file
+      no_log: true
       copy:
         dest: ~/app/deploy/docker/.env
         mode: '0600'

@@ -10,6 +10,7 @@
         key_file: ~/.ssh/id_ed25519
 
     - name: Update SMTP settings in .env
+      no_log: true
       lineinfile:
         path: ~/app/deploy/docker/.env
         regexp: "^{{ item.key }}="
