@@ -26,6 +26,10 @@ body {
     filter: invert(1);
 }
 
+[data-bs-theme="dark"] .logo-deerpost {
+    filter: invert(1);
+}
+
 .avatar-profile {
     width: 96px;
     height: 96px;
