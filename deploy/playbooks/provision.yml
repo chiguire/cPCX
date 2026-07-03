@@ -255,6 +255,7 @@
           WorkingDirectory=/home/{{ ansible_user }}/app/deploy/docker
           EnvironmentFile=/home/{{ ansible_user }}/app/deploy/docker/.env
           ExecStart=/usr/bin/docker compose -f {{ compose_file }} up -d --build
+          ExecStartPost=/usr/bin/docker image prune -f
           ExecStartPost=/usr/bin/sudo /usr/bin/systemctl start nginx
           ExecStop=/usr/bin/docker compose -f {{ compose_file }} down
 
