@@ -14,6 +14,7 @@
                uidmap,
                ca-certificates,
                curl,
+               cron,
                python3-pip, python3-packaging, python3-requests]
         state: present
 
