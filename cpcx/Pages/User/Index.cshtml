@@ -90,7 +90,7 @@
                     </form>
                 }
                 <h5 class="card-title">About @Model.UserProfile.UserName...</h5>
-                <p class="card-text twemoji">@Model.UserProfile.ProfileDescription</p>
+                <p class="card-text twemoji">@Model.UserProfile.ProfileDescription.ToHtmlWithLineBreaks()</p>
             </div>
 
             @* ── Sent tab ── *@

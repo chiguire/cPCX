@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using cpcx.Config;
 using cpcx.Data;
 using cpcx.Entities;
@@ -24,6 +25,9 @@ public interface IUserService
 
 public class UserService(ApplicationDbContext context, ILogger<UserService> logger) : IUserService
 {
+    private static readonly Regex HtmlTagRegex = new(@"<[^>]*>", RegexOptions.Compiled);
+
+
     public async Task<string> GetUserAddress(Guid userId, Guid eventId)
     {
         var eventUser = await context.EventUsers.FindAsync(eventId, userId);
@@ -66,7 +70,7 @@ public class UserService(ApplicationDbContext context, ILogger<UserService> logg
 
     public async Task SetUserProfileDescription(CpcxUser user, string profileDescription)
     {
-        user.ProfileDescription = profileDescription;
+        user.ProfileDescription = HtmlTagRegex.Replace(profileDescription, "");
         context.Users.Update(user);
         await context.SaveChangesAsync();
     }
