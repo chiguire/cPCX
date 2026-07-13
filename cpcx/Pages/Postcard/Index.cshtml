@@ -38,6 +38,20 @@
         
         <h3>A bit about @Model.Postcard.Receiver.UserName</h3>
         <p>@Model.Postcard.Receiver.ProfileDescription.ToHtmlWithLineBreaks()</p>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Not sure what to write?</h5>
+                <p class="mb-1">Here are some ideas for your postcard note:</p>
+                <ul class="mb-0">
+                    <li>Something from @Model.Postcard.Receiver.UserName's profile above</li>
+                    <li>What you're doing at EMF</li>
+                    <li>What's something that you've enjoyed most at EMF</li>
+                    <li>Things you're into — projects, hobbies, fandoms</li>
+                    <li>Anything else that you want to say</li>
+                </ul>
+            </div>
+        </div>
     }
     else
     {
