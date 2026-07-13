@@ -5,6 +5,11 @@
       apt:
         update_cache: yes
 
+    - name: Upgrade all packages
+      become: true
+      apt:
+        upgrade: dist
+
     - name: Install required packages
       become: true
       apt:
