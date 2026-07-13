@@ -5,11 +5,11 @@ namespace cpcx.Extensions;
 
 public static class TextExtensions
 {
-    // Encodes the text for safe HTML output, then turns newlines into <br> tags.
+    // Splits on newlines and encodes each line for safe HTML output, then joins with <br> tags.
     public static IHtmlContent ToHtmlWithLineBreaks(this string? text)
     {
-        var encoded = HtmlEncoder.Default.Encode(text ?? "");
-        var withBreaks = encoded.Replace("\r\n", "\n").Replace("\n", "<br>");
-        return new HtmlString(withBreaks);
+        var lines = (text ?? "").Replace("\r\n", "\n").Split('\n');
+        var encodedLines = lines.Select(HtmlEncoder.Default.Encode);
+        return new HtmlString(string.Join("<br>", encodedLines));
     }
 }
