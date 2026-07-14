@@ -73,21 +73,27 @@
                 }
                 else if (Model.IsBlockedByMe)
                 {
-                    <form method="post" asp-page-handler="Unblock" asp-route-alias="@Model.UserProfile.UserName"
-                          class="position-absolute top-0 end-0">
-                        <button type="submit" class="btn btn-sm btn-outline-secondary"
-                                data-bs-toggle="tooltip"
-                                title="Blocking a user prevents them from seeing your profile. Sending a postcard will skip their account, and yours will be skipped when they send a postcard. Existing postcards can still be registered.">Unblock</button>
-                    </form>
+                    <div class="position-absolute top-0 end-0 d-flex gap-2">
+                        <a asp-page="/User/Report" asp-route-alias="@Model.UserProfile.UserName"
+                           class="btn btn-sm btn-outline-secondary">Report profile</a>
+                        <form method="post" asp-page-handler="Unblock" asp-route-alias="@Model.UserProfile.UserName">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                    data-bs-toggle="tooltip"
+                                    title="Blocking a user prevents them from seeing your profile. Sending a postcard will skip their account, and yours will be skipped when they send a postcard. Existing postcards can still be registered.">Unblock</button>
+                        </form>
+                    </div>
                 }
                 else
                 {
-                    <form method="post" asp-page-handler="Block" asp-route-alias="@Model.UserProfile.UserName"
-                          class="position-absolute top-0 end-0">
-                        <button type="submit" class="btn btn-sm btn-outline-danger"
-                                data-bs-toggle="tooltip"
-                                title="Blocking a user prevents them from seeing your profile. Sending a postcard will skip their account, and yours will be skipped when they send a postcard. Existing postcards can still be registered.">Block</button>
-                    </form>
+                    <div class="position-absolute top-0 end-0 d-flex gap-2">
+                        <a asp-page="/User/Report" asp-route-alias="@Model.UserProfile.UserName"
+                           class="btn btn-sm btn-outline-secondary">Report profile</a>
+                        <form method="post" asp-page-handler="Block" asp-route-alias="@Model.UserProfile.UserName">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="tooltip"
+                                    title="Blocking a user prevents them from seeing your profile. Sending a postcard will skip their account, and yours will be skipped when they send a postcard. Existing postcards can still be registered.">Block</button>
+                        </form>
+                    </div>
                 }
                 <h5 class="card-title">About @Model.UserProfile.UserName...</h5>
                 <p class="card-text twemoji">@Model.UserProfile.ProfileDescription.ToHtmlWithLineBreaks()</p>

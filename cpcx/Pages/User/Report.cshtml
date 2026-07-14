@@ -1,0 +1,36 @@
+@page "{alias}"
+@model cpcx.Pages.User.Report
+@{
+    ViewData["Title"] = $"Report {Model.ReportedUserAlias}'s profile";
+}
+
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+    <p>Received a postcard or message from @Model.ReportedUserAlias that goes against the
+        <a asp-page="/Guidelines">DeerPost Community Guidelines</a> or the
+        <a href="https://www.emfcamp.org/code-of-conduct">EMF Code of Conduct</a>, or that you feel isn't
+        suitable? Fill in the form below and the caretaker will look into it for you.</p>
+
+    @if (!Model.HasEmail)
+    {
+        <div class="alert alert-warning" role="alert">
+            You don't have an email address set on your account. The caretaker needs a way to reply to you — please
+            <a asp-area="Identity" asp-page="/Account/Manage/Email">set your email address</a> first.
+        </div>
+    }
+    else
+    {
+        <form method="post">
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">
+                    Describe the issue with @Model.ReportedUserAlias's profile or a postcard/message from them:
+                </label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            </div>
+            <input type="submit" value="Send Report" class="btn btn-primary" />
+        </form>
+    }
+</div>
