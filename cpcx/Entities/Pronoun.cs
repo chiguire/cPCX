@@ -12,7 +12,7 @@ public enum Pronoun
     [Description("She/her")]
     Female,
     [Description("They/them")]
-    Neutral,
+    NonBinary,
     [Description("They/them")]
     Group,
 }

@@ -86,7 +86,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             Email = $"user{i:D3}@example.com",
             NormalizedEmail = $"USER{i:D3}@EXAMPLE.COM",
             PasswordHash = devpassword,
-            Pronouns = Pronoun.Neutral,
+            Pronouns = Pronoun.NonBinary,
             ProfileDescription = $"Load test user {i}",
             AvatarPath = avatarFiles.Length > 0 ? avatarFiles[Random.Shared.Next(avatarFiles.Length)] : "",
             BlockedUsers = [],
