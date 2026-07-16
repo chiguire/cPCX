@@ -15,7 +15,7 @@ http {
     # Redirect all HTTP to HTTPS
     server {
         listen 80;
-        server_name www.deerpost.cx emf.deerpost.cx;
+        server_name deerpost.cx www.deerpost.cx emf.deerpost.cx;
 
         location /.well-known/acme-challenge/ {
             root /var/www/html;
@@ -29,7 +29,7 @@ http {
     # Static site — apex domain
     server {
         listen 443 ssl;
-        server_name www.deerpost.cx;
+        server_name deerpost.cx www.deerpost.cx;
 
         ssl_certificate     /etc/letsencrypt/live/www.deerpost.cx/fullchain.pem;
         ssl_certificate_key /etc/letsencrypt/live/www.deerpost.cx/privkey.pem;

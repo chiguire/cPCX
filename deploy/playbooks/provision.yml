@@ -189,6 +189,7 @@
         certbot certonly --webroot -w /var/www/html --non-interactive --agree-tos
         --email {{ certbot_email }}
         -d {{ domain_apex }}
+        -d {{ domain_root }}
         -d {{ domain_cpcx }}
       args:
         creates:

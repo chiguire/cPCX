@@ -8,6 +8,7 @@ ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -v -K -i inventory.ini p
     -e "github_ssh_private_key_path=${GITHUB_SSH_PRIVATE_KEY_PATH}" \
     -e "github_repo=${GITHUB_REPO}" \
     -e "certbot_email=${CERTBOT_EMAIL}" \
+    -e "domain_root=${DOMAIN_ROOT}" \
     -e "domain_apex=${DOMAIN_APEX}" \
     -e "domain_cpcx=${DOMAIN_CPCX}" \
     -e "allowed_cidrs=${ALLOWED_CIDRS}" \
