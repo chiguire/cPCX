@@ -18,6 +18,8 @@ services:
       args:
         PROJECT_PATH: ${CPCX_PROJECT_PATH:-cpcx}
     restart: unless-stopped
+    volumes:
+      - ${DATA_PROTECTION_KEYS_PATH:-~/dataprotection-keys}:/keys
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080

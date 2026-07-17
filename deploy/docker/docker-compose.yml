@@ -20,6 +20,8 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:8080"
+    volumes:
+      - ${DATA_PROTECTION_KEYS_PATH:-~/dataprotection-keys}:/keys
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080

@@ -146,6 +146,7 @@
           POSTGRES_USER={{ postgres_user }}
           POSTGRES_PASSWORD={{ postgres_password }}
           POSTGRES_DATA_PATH={{ postgres_data_path }}
+          DATA_PROTECTION_KEYS_PATH={{ data_protection_keys_path }}
           CPCX_PROJECT_PATH=cpcx
 
     - name: Delete postgres data directory

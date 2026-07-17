@@ -15,4 +15,5 @@ ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -v -K -i inventory.ini p
     -e "postgres_db=${POSTGRES_DB}" \
     -e "postgres_user=${POSTGRES_USER}" \
     -e "postgres_data_path=${POSTGRES_DATA_PATH}" \
+    -e "data_protection_keys_path=${DATA_PROTECTION_KEYS_PATH}" \
     -e "compose_file=${COMPOSE_FILE}"
