@@ -132,6 +132,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                           AND eu.""UserId"" != p_sender_id
                           AND eu.""ActiveInEvent"" = true
                           AND u.""IsDeleted"" = false
+                          AND u.""DeactivatedDate"" = to_timestamp(0)
+                          AND u.""BlockedUntilDate"" <= NOW()
                           AND eu.""UserId"" NOT IN (SELECT ""BlockedUserId"" FROM ""UserBlocks"" WHERE ""BlockerId"" = p_sender_id)
                           AND eu.""UserId"" NOT IN (SELECT ""BlockerId"" FROM ""UserBlocks"" WHERE ""BlockedUserId"" = p_sender_id)
                         ORDER BY ""PriorityScore"" DESC, random()
