@@ -9,21 +9,105 @@
         force: true
         key_file: ~/.ssh/id_ed25519
 
-    - name: Copy html files to nginx web root
+    # Landing page follows the same releases/current structure as the
+    # static sites managed by ~/workspaces/chiguire-vps (see scripts/deploy.sh)
+    - name: Set release timestamp
+      set_fact:
+        release_dir: "/var/www/deerpost/releases/{{ ansible_date_time.year }}{{ ansible_date_time.month }}{{ ansible_date_time.day }}{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}"
+
+    - name: Create release directory
+      become: true
+      file:
+        path: "{{ release_dir }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Copy html files into the new release
       become: true
       copy:
         src: /home/{{ ansible_user }}/app/deploy/docker/nginx/html/
-        dest: /var/www/html/
+        dest: "{{ release_dir }}/"
         remote_src: yes
+        owner: www-data
+        group: www-data
 
-    - name: Render nginx config
+    - name: Flip current symlink to the new release
+      become: true
+      file:
+        src: "{{ release_dir }}"
+        dest: /var/www/deerpost/current
+        state: link
+
+    - name: Prune old releases (keep last 5)
+      become: true
+      shell: ls -1t /var/www/deerpost/releases | tail -n +6 | xargs -r -I{} rm -rf /var/www/deerpost/releases/{}
+      changed_when: false
+
+    - name: Render base nginx config
       become: true
       template:
         src: "{{ playbook_dir }}/../docker/nginx/nginx.conf.j2"
         dest: /etc/nginx/nginx.conf
+
+    - name: Ensure sites-available/sites-enabled exist
+      become: true
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /etc/nginx/sites-available
+        - /etc/nginx/sites-enabled
+
+    - name: Ensure shared ACME challenge webroot exists
+      become: true
+      file:
+        path: /var/www/letsencrypt
+        state: directory
+        mode: '0755'
+
+    - name: Check for existing certbot renewal config
+      become: true
+      stat:
+        path: /etc/letsencrypt/renewal/www.deerpost.cx.conf
+      register: deerpost_renewal_conf
+
+    - name: Point certbot renewal webroot at the shared ACME webroot
+      become: true
+      replace:
+        path: /etc/letsencrypt/renewal/www.deerpost.cx.conf
+        regexp: '/var/www/html'
+        replace: '/var/www/letsencrypt'
+      when: deerpost_renewal_conf.stat.exists
+
+    - name: Render deerpost site config
+      become: true
+      template:
+        src: "{{ playbook_dir }}/../docker/nginx/deerpost-site.conf.j2"
+        dest: /etc/nginx/sites-available/deerpost.conf
+
+    - name: Enable deerpost site
+      become: true
+      file:
+        src: /etc/nginx/sites-available/deerpost.conf
+        dest: /etc/nginx/sites-enabled/deerpost.conf
+        state: link
+
+    - name: Validate nginx config
+      become: true
+      command: nginx -t
+      changed_when: false
 
     - name: Reload nginx
       become: true
       systemd:
         name: nginx
         state: reloaded
+
+    - name: Verify cert renewal works with the new webroot (staging dry-run)
+      become: true
+      command: certbot renew --cert-name www.deerpost.cx --dry-run
+      changed_when: false
+      when: deerpost_renewal_conf.stat.exists
