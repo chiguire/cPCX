@@ -45,12 +45,9 @@
       shell: ls -1t /var/www/deerpost/releases | tail -n +6 | xargs -r -I{} rm -rf /var/www/deerpost/releases/{}
       changed_when: false
 
-    - name: Render base nginx config
-      become: true
-      template:
-        src: "{{ playbook_dir }}/../docker/nginx/nginx.conf.j2"
-        dest: /etc/nginx/nginx.conf
-
+    # NOTE: /etc/nginx/nginx.conf is owned by the chiguire-vps Ansible
+    # project (~/workspaces/chiguire-vps/ansible, nginx role). This playbook
+    # only manages sites-available/deerpost.conf.
     - name: Ensure sites-available/sites-enabled exist
       become: true
       file:
