@@ -52,6 +52,31 @@
         chdir: ~/app/deploy/docker
       when: redeploy_db | default(false) | bool
 
+    # The container now runs as uid 1654 (non-root) instead of root. In rootless
+    # Docker that uid maps to a sub-uid on the host, so the key ring directory
+    # (created earlier by the old root container, i.e. owned by this user) must
+    # be re-owned from INSIDE the user namespace. Idempotent; also locks the
+    # directory down to the app (mode 700) since the key ring signs auth cookies.
+    - name: Make the data protection keys dir owned by the container's app user
+      shell: |
+        set -e
+        KEYS="{{ data_protection_keys_path }}"
+        KEYS="${KEYS/#\~/$HOME}"
+        mkdir -p "$KEYS"
+        docker run --rm -u 0 --network none --cap-drop ALL \
+          --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER \
+          --entrypoint /bin/sh -v "$KEYS:/keys" \
+          mcr.microsoft.com/dotnet/aspnet:10.0-alpine -c '
+            if [ -n "$(find /keys ! -user 1654 | head -1)" ] || [ "$(stat -c %a /keys)" != "700" ]; then
+              chown -R 1654:1654 /keys && chmod 700 /keys && echo CHANGED
+            fi'
+      args:
+        executable: /bin/bash
+      environment:
+        DOCKER_HOST: "unix:///run/user/{{ ansible_user_uid }}/docker.sock"
+      register: keys_owner
+      changed_when: "'CHANGED' in keys_owner.stdout"
+
     - name: Restart cpcx service
       shell: systemctl --user restart cpcx
       environment:

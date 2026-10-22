@@ -11,5 +11,9 @@ WORKDIR /app
 COPY --from=builder /app .
 RUN apk add --no-cache icu-libs
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+# Run as the image's built-in non-root user (APP_UID=1654 in .NET 8+ images).
+# Installs above ran as root; nothing below needs it. The /keys volume must be
+# owned by this uid - redeploy_cpcx.yml takes care of that.
+USER $APP_UID
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "cpcx.dll"]
