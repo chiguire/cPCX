@@ -60,7 +60,9 @@
     - name: Make the data protection keys dir owned by the container's app user
       shell: |
         set -e
-        KEYS="{{ data_protection_keys_path }}"
+        # Same fallback as docker-compose.yml (${DATA_PROTECTION_KEYS_PATH:-~/dataprotection-keys});
+        # the variable is empty when it is missing from deploy/secrets.
+        KEYS="{{ data_protection_keys_path | default('', true) | trim or '~/dataprotection-keys' }}"
         KEYS="${KEYS/#\~/$HOME}"
         mkdir -p "$KEYS"
         docker run --rm -u 0 --network none --cap-drop ALL \
