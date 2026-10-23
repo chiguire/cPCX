@@ -1,0 +1,65 @@
+# Create (or, with explicit confirmation, RESET) the cpcx database.
+#
+#   ./init_db.sh           first-time setup; refuses if data already exists
+#   ./init_db.sh --wipe    DELETES the existing database after you type its name
+#
+# provision.yml never touches the database; this is the only place it is created.
+- name: Initialise the cpcx database
+  hosts: vps
+  vars:
+    user_runtime_env:
+      XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+      DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ ansible_user_uid }}/bus"
+      DOCKER_HOST: "unix:///run/user/{{ ansible_user_uid }}/docker.sock"
+  tasks:
+    - name: Check that postgres_data_path was passed in
+      assert:
+        that: (postgres_data_path | default('') | string | length) > 0
+        fail_msg: "postgres_data_path is missing - check deploy/secrets"
+        quiet: true
+
+    - name: Is there already a database?
+      become: true
+      stat:
+        path: "{{ postgres_data_path }}"
+      register: pg_data
+
+    - name: Refuse to overwrite an existing database without confirmation
+      fail:
+        msg: >-
+          A Postgres data directory already exists at {{ postgres_data_path }}.
+          Initialising would DELETE it. If that is really what you want, run
+          ./init_db.sh --wipe (back it up first: there is no automatic backup).
+      when: pg_data.stat.exists and (confirm_wipe | default('no')) != 'yes'
+
+    - name: Stop the cpcx service
+      command: systemctl --user stop cpcx
+      environment: "{{ user_runtime_env }}"
+      failed_when: false
+
+    - name: Delete the old postgres data directory
+      become: true
+      file:
+        path: "{{ postgres_data_path }}"
+        state: absent
+      when: pg_data.stat.exists
+
+    - name: Delete the migrations directory (regenerated below)
+      file:
+        path: "/home/{{ ansible_user }}/app/cpcx/Migrations"
+        state: absent
+
+    - name: Ensure init-db.sh is executable
+      file:
+        path: "/home/{{ ansible_user }}/app/deploy/docker/init-db.sh"
+        mode: u+x
+
+    - name: Initialise the database
+      shell:
+        cmd: ./init-db.sh InitialMigration
+        chdir: "/home/{{ ansible_user }}/app/deploy/docker"
+      environment: "{{ user_runtime_env }}"
+
+    - name: Next step
+      debug:
+        msg: "Database created. The app is stopped: run ./redeploy_cpcx.sh to build and start it."

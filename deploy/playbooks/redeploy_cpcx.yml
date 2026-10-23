@@ -1,5 +1,10 @@
 - hosts: vps
   tasks:
+    - name: Refuse to delete the database without explicit confirmation
+      fail:
+        msg: "redeploy_db deletes the production database; run ./redeploy_cpcx.sh --reset-db (it asks for confirmation)."
+      when: (redeploy_db | default(false) | bool) and (confirm_wipe | default('no')) != 'yes'
+
     - name: Checkout release branch
       git:
         repo: "{{ github_repo }}"

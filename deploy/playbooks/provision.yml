@@ -1,27 +1,89 @@
-- hosts: vps
+# Provision cpcx (rootless Docker + the app + the deerpost.cx certificate) on a
+# VPS that has ALREADY been prepared by the chiguire-vps Ansible project.
+#
+# chiguire-vps owns everything shared on the box: SSH hardening, ufw, nginx
+# (nginx.conf, the catch-all and every static site), certbot + its renewal
+# timer, logrotate, the deploy user. This playbook does NOT touch any of it,
+# and is safe to re-run: it never regenerates the Postgres password, never
+# deletes data, and skips anything already in place.
+#
+# Order on a fresh VPS (see vps_bootstrap.md):
+#   chiguire-vps: ansible-playbook site.yml
+#   here:         ./provision.sh  ->  ./init_db.sh  ->  ./redeploy_landing_page.sh  ->  ./redeploy_cpcx.sh
+- name: Provision cpcx
+  hosts: vps
+  vars:
+    cpcx_compose_file: "{{ compose_file | default('docker-compose.yml') }}"
+    user_runtime_env:
+      XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+      DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ ansible_user_uid }}/bus"
+    user_home: "/home/{{ ansible_user }}"
   tasks:
-    - name: Update apt cache
-      become: true
-      apt:
-        update_cache: yes
+    # ------------------------------------------------------------------
+    # 0. Preflight: fail early and clearly
+    # ------------------------------------------------------------------
+    - name: Check that every required variable was passed in
+      assert:
+        that: (lookup('vars', item, default='') | string | length) > 0
+        fail_msg: "Variable '{{ item }}' is missing or empty - check deploy/secrets (see secrets.example)"
+        quiet: true
+      loop:
+        - github_ssh_private_key_path
+        - github_repo
+        - certbot_email
+        - domain_root
+        - domain_apex
+        - domain_cpcx
+        - postgres_db
+        - postgres_user
+        - postgres_data_path
 
-    - name: Upgrade all packages
+    - name: Preflight - look for what chiguire-vps sets up
       become: true
-      apt:
-        upgrade: dist
+      stat:
+        path: "{{ item }}"
+      loop:
+        - /usr/sbin/nginx
+        - /etc/nginx/sites-enabled
+        - /var/www/letsencrypt
+        - /usr/bin/certbot
+      register: preflight_stat
 
-    - name: Install required packages
+    - name: Preflight - firewall state
+      become: true
+      command: ufw status
+      changed_when: false
+      failed_when: false
+      register: preflight_ufw
+
+    - name: Preflight - chiguire-vps must have been applied first
+      assert:
+        that:
+          - preflight_stat.results | map(attribute='stat.exists') | min
+          - "'Status: active' in preflight_ufw.stdout"
+        fail_msg: >-
+          This VPS has not been prepared by chiguire-vps (nginx, certbot, the
+          shared ACME webroot or ufw is missing). Apply it first:
+          cd chiguire-vps/ansible && ansible-playbook site.yml
+        quiet: true
+
+    - name: Preflight - sub-uid/gid ranges for rootless Docker exist
+      command: grep -q "^{{ ansible_user }}:" {{ item }}
+      loop:
+        - /etc/subuid
+        - /etc/subgid
+      changed_when: false
+
+    # ------------------------------------------------------------------
+    # 1. Docker CE packages, then switch the root daemon off (rootless only)
+    # ------------------------------------------------------------------
+    - name: Install packages needed for Docker and the Ansible docker modules
       become: true
       apt:
-        name: [git,
-               nginx,
-               ufw,
-               uidmap,
-               ca-certificates,
-               curl,
-               cron,
-               python3-pip, python3-packaging, python3-requests]
+        name: [git, curl, ca-certificates, gnupg, uidmap, dbus-user-session, python3-requests, python3-packaging]
         state: present
+        update_cache: true
+        cache_valid_time: 3600
 
     - name: Create /etc/apt/keyrings directory
       become: true
@@ -44,11 +106,6 @@
       args:
         creates: /etc/apt/sources.list.d/docker.list
 
-    - name: Update apt cache after adding Docker repository
-      become: true
-      apt:
-        update_cache: yes
-
     - name: Install Docker CE packages
       become: true
       apt:
@@ -58,9 +115,11 @@
           - containerd.io
           - docker-buildx-plugin
           - docker-compose-plugin
+          - docker-ce-rootless-extras
         state: present
+        update_cache: true
 
-    - name: Disable root Docker service and socket
+    - name: Disable the root Docker service and socket (rootless only)
       become: true
       systemd:
         name: "{{ item }}"
@@ -70,55 +129,90 @@
         - docker.service
         - docker.socket
 
-    - name: Remove root Docker socket
+    - name: Remove the root Docker socket
       become: true
       file:
         path: /var/run/docker.sock
         state: absent
 
-    - name: Set up rootless Docker
-      shell: curl -fsSL https://get.docker.com/rootless | sh
-      environment:
-        XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
-
-    - name: Enable rootless Docker and start on boot
-      shell: systemctl --user enable --now docker
-      environment:
-        XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
-
-    - name: Enable linger so rootless Docker starts at boot
+    # ------------------------------------------------------------------
+    # 2. Rootless Docker for the app user
+    # ------------------------------------------------------------------
+    - name: Enable linger so the user's services (rootless Docker, cpcx) start at boot
       become: true
-      shell: loginctl enable-linger {{ ansible_user }}
+      command: loginctl enable-linger {{ ansible_user }}
+      args:
+        creates: "/var/lib/systemd/linger/{{ ansible_user }}"
 
-    - name: Copy Github SSH private key to ~/.ssh
+    # Uses the setup tool shipped in docker-ce-rootless-extras (apt, signed)
+    # instead of piping get.docker.com/rootless into sh.
+    - name: Set up rootless Docker
+      command: dockerd-rootless-setuptool.sh install
+      args:
+        creates: "{{ user_home }}/.config/systemd/user/docker.service"
+      environment: "{{ user_runtime_env }}"
+
+    - name: Enable and start rootless Docker
+      systemd:
+        name: docker
+        scope: user
+        enabled: true
+        state: started
+      environment: "{{ user_runtime_env }}"
+
+    # ------------------------------------------------------------------
+    # 3. Application code and configuration
+    # ------------------------------------------------------------------
+    - name: Ensure ~/.ssh exists
+      file:
+        path: "{{ user_home }}/.ssh"
+        state: directory
+        mode: '0700'
+
+    # Use a READ-ONLY, repo-scoped GitHub deploy key here, never a personal key.
+    - name: Install the GitHub deploy key
+      no_log: true
       copy:
         src: "{{ github_ssh_private_key_path }}"
-        dest: "~/.ssh/id_ed25519"
+        dest: "{{ user_home }}/.ssh/id_ed25519"
         mode: '0600'
 
-    - name: Clone repository
+    - name: Clone the repository
       git:
         repo: "{{ github_repo }}"
-        dest: ~/app
+        dest: "{{ user_home }}/app"
         version: release
-        accept_hostkey: yes
+        accept_hostkey: true
         force: true
-        key_file: ~/.ssh/id_ed25519
+        key_file: "{{ user_home }}/.ssh/id_ed25519"
 
-    - name: Empty Migrations directory
-      file:
-        path: ~/app/cpcx/Migrations
-        state: "{{ item }}"
-      loop:
-        - absent
-        - directory
+    - name: Check for an existing .env
+      stat:
+        path: "{{ user_home }}/app/deploy/docker/.env"
+      register: env_file
 
-    - name: Copy html files to nginx web root
-      become: true
+    # Generated ONLY for a brand-new .env: re-running provision must never
+    # change the password of a database that already exists.
+    - name: Generate the Postgres password (new .env only)
+      no_log: true
+      set_fact:
+        postgres_password: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+      when: not env_file.stat.exists
+
+    - name: Write .env (never overwrites an existing one)
+      no_log: true
       copy:
-        src: /home/{{ ansible_user }}/app/deploy/docker/nginx/html/
-        dest: /var/www/html/
-        remote_src: yes
+        dest: "{{ user_home }}/app/deploy/docker/.env"
+        mode: '0600'
+        force: false
+        content: |
+          POSTGRES_DB={{ postgres_db }}
+          POSTGRES_USER={{ postgres_user }}
+          POSTGRES_PASSWORD={{ postgres_password }}
+          POSTGRES_DATA_PATH={{ postgres_data_path }}
+          DATA_PROTECTION_KEYS_PATH={{ data_protection_keys_path | default('', true) }}
+          CPCX_PROJECT_PATH=cpcx
+      when: not env_file.stat.exists
 
     - name: Pull Docker images
       community.docker.docker_image:
@@ -128,129 +222,21 @@
       loop:
         - postgres:17
         - mcr.microsoft.com/dotnet/sdk:10.0
-        - mcr.microsoft.com/dotnet/sdk:10.0-alpine
         - mcr.microsoft.com/dotnet/aspnet:10.0-alpine
 
-    - name: Generate postgres password
-      no_log: true
-      set_fact:
-        postgres_password: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
-
-    - name: Write .env file
-      no_log: true
-      copy:
-        dest: ~/app/deploy/docker/.env
-        mode: '0600'
-        content: |
-          POSTGRES_DB={{ postgres_db }}
-          POSTGRES_USER={{ postgres_user }}
-          POSTGRES_PASSWORD={{ postgres_password }}
-          POSTGRES_DATA_PATH={{ postgres_data_path }}
-          DATA_PROTECTION_KEYS_PATH={{ data_protection_keys_path }}
-          CPCX_PROJECT_PATH=cpcx
-
-    - name: Delete postgres data directory
-      become: true
+    # ------------------------------------------------------------------
+    # 4. cpcx as a user systemd service (installed + enabled, NOT started:
+    #    the database must exist first - run init_db.sh, then redeploy_cpcx.sh)
+    # ------------------------------------------------------------------
+    - name: Create the user systemd directory
       file:
-        path: "{{ postgres_data_path }}"
-        state: absent
-
-    - name: Ensure init-db.sh is executable
-      file:
-        path: ~/app/deploy/docker/init-db.sh
-        mode: '0700'
-
-    - name: Initialise database
-      shell:
-        cmd: ~/app/deploy/docker/init-db.sh InitialMigration
-        chdir: ~/app/deploy/docker
-
-    - name: Install snapd
-      become: true
-      apt:
-        name: snapd
-        state: present
-
-    - name: Install certbot via snap
-      become: true
-      community.general.snap:
-        name: certbot
-        classic: yes
-
-    - name: Create certbot symlink
-      become: true
-      file:
-        src: /snap/bin/certbot
-        dest: /usr/bin/certbot
-        state: link
-
-    - name: Obtain SSL certificates
-      become: true
-      command: >
-        certbot certonly --webroot -w /var/www/html --non-interactive --agree-tos
-        --email {{ certbot_email }}
-        -d {{ domain_apex }}
-        -d {{ domain_root }}
-        -d {{ domain_cpcx }}
-      args:
-        creates:
-          - /etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem
-
-    - name: Render nginx config
-      become: true
-      template:
-        src: "{{ playbook_dir }}/../docker/nginx/nginx.conf.j2"
-        dest: /etc/nginx/nginx.conf
-
-    - name: Enable and reload nginx
-      become: true
-      systemd:
-        name: nginx
-        enabled: yes
-        state: reloaded
-
-    - name: Schedule certbot renewal
-      become: true
-      cron:
-        name: certbot renew
-        minute: "30"
-        hour: "5"
-        job: certbot renew --quiet
-        user: root
-
-    - name: Open SSH, HTTP and HTTPS ports
-      become: true
-      community.general.ufw:
-        rule: allow
-        port: "{{ item }}"
-        proto: tcp
-      loop:
-        - "22"
-        - "80"
-        - "443"
-
-    - name: Enable ufw
-      become: true
-      community.general.ufw:
-        state: enabled
-
-    - name: Allow {{ ansible_user }} to start/stop nginx without password
-      become: true
-      copy:
-        dest: /etc/sudoers.d/{{ ansible_user }}-nginx
-        content: "{{ ansible_user }} ALL=(root) NOPASSWD: /usr/bin/systemctl start nginx, /usr/bin/systemctl stop nginx\n"
-        mode: '0440'
-        validate: /usr/sbin/visudo -cf %s
-
-    - name: Create user systemd directory
-      file:
-        path: ~/.config/systemd/user
+        path: "{{ user_home }}/.config/systemd/user"
         state: directory
         mode: '0755'
 
-    - name: Install cpcx user systemd service
+    - name: Install the cpcx user systemd service
       copy:
-        dest: ~/.config/systemd/user/cpcx.service
+        dest: "{{ user_home }}/.config/systemd/user/cpcx.service"
         mode: '0644'
         content: |
           [Unit]
@@ -260,19 +246,103 @@
           [Service]
           Type=oneshot
           RemainAfterExit=yes
-          WorkingDirectory=/home/{{ ansible_user }}/app/deploy/docker
-          EnvironmentFile=/home/{{ ansible_user }}/app/deploy/docker/.env
-          ExecStart=/usr/bin/docker compose -f {{ compose_file }} up -d --build
+          WorkingDirectory={{ user_home }}/app/deploy/docker
+          EnvironmentFile={{ user_home }}/app/deploy/docker/.env
+          Environment=DOCKER_HOST=unix://%t/docker.sock
+          ExecStart=/usr/bin/docker compose -f {{ cpcx_compose_file }} up -d --build
           ExecStartPost=/usr/bin/docker image prune -f
-          ExecStartPost=/usr/bin/sudo /usr/bin/systemctl start nginx
-          ExecStop=/usr/bin/docker compose -f {{ compose_file }} down
+          # Rebuilds leave a lot of build cache behind (it reached tens of GB); keep a week.
+          ExecStartPost=-/usr/bin/docker builder prune -f --filter until=168h
+          ExecStop=/usr/bin/docker compose -f {{ cpcx_compose_file }} down
 
           [Install]
           WantedBy=default.target
 
-    - name: Enable and start cpcx user service
-      shell: |
-        systemctl --user daemon-reload
-        systemctl --user enable --now cpcx
-      environment:
-        XDG_RUNTIME_DIR: /run/user/{{ ansible_user_uid }}
+    - name: Reload user units and enable cpcx
+      systemd:
+        name: cpcx
+        scope: user
+        daemon_reload: true
+        enabled: true
+      environment: "{{ user_runtime_env }}"
+
+    # ------------------------------------------------------------------
+    # 5. TLS certificate for deerpost.cx (first time only)
+    #    nginx on this box has a catch-all that drops unknown hostnames, so a
+    #    short-lived port-80 vhost serves just the ACME challenge. The real
+    #    deerpost.conf (needs this cert) is rendered by redeploy_landing_page.yml.
+    #    DNS for all three names must already point at this VPS.
+    # ------------------------------------------------------------------
+    - name: Check for an existing deerpost certificate
+      become: true
+      stat:
+        path: "/etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem"
+      register: deerpost_cert
+
+    - name: Issue the deerpost certificate
+      when: not deerpost_cert.stat.exists
+      block:
+        - name: Add a temporary ACME-only vhost
+          become: true
+          copy:
+            dest: /etc/nginx/sites-enabled/00-deerpost-acme.conf
+            mode: '0644'
+            content: |
+              server {
+                  listen 80;
+                  listen [::]:80;
+                  server_name {{ domain_apex }} {{ domain_root }} {{ domain_cpcx }};
+                  location /.well-known/acme-challenge/ { root /var/www/letsencrypt; }
+                  location / { return 404; }
+              }
+
+        - name: Test and reload nginx
+          become: true
+          shell: nginx -t && systemctl reload nginx
+
+        - name: Obtain the certificate (webroot, shared with chiguire-vps)
+          become: true
+          command: >
+            certbot certonly --webroot -w /var/www/letsencrypt
+            --non-interactive --agree-tos -m {{ certbot_email }}
+            --deploy-hook "systemctl reload nginx"
+            -d {{ domain_apex }} -d {{ domain_root }} -d {{ domain_cpcx }}
+          args:
+            creates: "/etc/letsencrypt/live/{{ domain_apex }}/fullchain.pem"
+      always:
+        - name: Remove the temporary ACME-only vhost
+          become: true
+          file:
+            path: /etc/nginx/sites-enabled/00-deerpost-acme.conf
+            state: absent
+
+        - name: Reload nginx without it
+          become: true
+          shell: nginx -t && systemctl reload nginx
+
+    # ------------------------------------------------------------------
+    # 6. Remove leftovers of the old all-in-one provision.yml
+    #    (now owned by chiguire-vps, or no longer needed)
+    # ------------------------------------------------------------------
+    - name: Remove the old passwordless-nginx sudoers file (no longer needed)
+      become: true
+      file:
+        path: "/etc/sudoers.d/{{ ansible_user }}-nginx"
+        state: absent
+      tags: [cleanup]
+
+    - name: Remove the old root cron job for certbot (certbot.timer renews now)
+      become: true
+      cron:
+        name: certbot renew
+        user: root
+        state: absent
+      tags: [cleanup]
+
+    - name: Next steps
+      debug:
+        msg:
+          - "cpcx is provisioned but NOT running yet."
+          - "1. ./init_db.sh                  (first time only: creates the database)"
+          - "2. ./redeploy_landing_page.sh    (renders the deerpost nginx vhost)"
+          - "3. ./redeploy_cpcx.sh            (starts the app)"

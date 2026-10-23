@@ -3,8 +3,14 @@
 source ./secrets
 
 EXTRA_ARGS=""
-if [[ "$1" == "--reset-db" ]]; then
-    EXTRA_ARGS="-e redeploy_db=true -e postgres_data_path=${POSTGRES_DATA_PATH} -K"
+if [[ "${1:-}" == "--reset-db" ]]; then
+    echo "This will DELETE the production database at ${POSTGRES_DATA_PATH} on the VPS (there is no automatic backup)."
+    read -r -p "Type the database name (${POSTGRES_DB}) to continue: " answer
+    if [[ "$answer" != "${POSTGRES_DB}" ]]; then
+        echo "Aborted." >&2
+        exit 1
+    fi
+    EXTRA_ARGS="-e redeploy_db=true -e confirm_wipe=yes -e postgres_data_path=${POSTGRES_DATA_PATH} -K"
 fi
 
 ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook -v -i inventory.ini playbooks/redeploy_cpcx.yml \
