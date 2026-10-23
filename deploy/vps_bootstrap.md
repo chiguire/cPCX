@@ -21,7 +21,7 @@ in `secrets`) at the VPS **before step 3** - Let's Encrypt validates them.
 ## 1. Base system (chiguire-vps)
 
 ```
-cd ../chiguire-vps/ansible        # adjust to where you keep it
+cd ../../chiguire-vps/ansible     # adjust to where you keep it
 ansible-playbook site.yml
 ```
 

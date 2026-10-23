@@ -10,7 +10,7 @@
         key_file: ~/.ssh/id_ed25519
 
     # Landing page follows the same releases/current structure as the
-    # static sites managed by ~/workspaces/chiguire-vps (see scripts/deploy.sh)
+    # static sites managed by ~/workspaces/chiguire-vps (see deploy.py there)
     - name: Set release timestamp
       set_fact:
         release_dir: "/var/www/deerpost/releases/{{ ansible_date_time.year }}{{ ansible_date_time.month }}{{ ansible_date_time.day }}{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}"
@@ -40,9 +40,15 @@
         dest: /var/www/deerpost/current
         state: link
 
+    # Order by release NAME (a timestamp), never by mtime, and never delete the
+    # release `current` points to (same rule as chiguire-vps/deploy.py).
     - name: Prune old releases (keep last 5)
       become: true
-      shell: ls -1t /var/www/deerpost/releases | tail -n +6 | xargs -r -I{} rm -rf /var/www/deerpost/releases/{}
+      shell: |
+        set -e
+        cd /var/www/deerpost/releases
+        current=$(basename "$(readlink -f ../current)")
+        ls -1 | sort -r | tail -n +6 | grep -vxF "$current" | xargs -r rm -rf
       changed_when: false
 
     # NOTE: /etc/nginx/nginx.conf is owned by the chiguire-vps Ansible
